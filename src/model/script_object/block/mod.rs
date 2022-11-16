@@ -1,26 +1,6 @@
 //! Typing the Scratch's block is so big. I have to put it in a another module.
 
-use getset::Getters;
-use serde::{
-    Deserialize,
-    Serialize,
-    de::{Visitor, DeserializeOwned},
-    Deserializer,
-    Serializer,
-};
-use serde_repr::{Serialize_repr, Deserialize_repr};
-use serde_json::Value as SerdeValue;
-
-use crate::utils::ConstStr_mutation;
-
-use super::super::{
-    id::ID,
-    name::Name,
-    opcode::OPCode,
-    field_hash_map::FieldHashMap,
-    value::Value,
-    number::Number,
-};
+use crate::model::prelude::*;
 
 /// Scratch scripting block
 #[derive(Debug, PartialEq, Clone, Getters, Deserialize, Serialize)]
@@ -28,22 +8,22 @@ use super::super::{
 #[get = "pub"]
 pub struct Block {
     /// A string naming the block.
-    opcode: OPCode<String>,
+    opcode: OpCode<String>,
 
-    /// The ID of the next block or null.
-    next: Option<ID>,
+    /// The Id of the next block or null.
+    next: Option<Id>,
 
-    /// If the block is a stack block and is preceded, this is the ID of the preceding block.
-    /// If the block is the first stack block in a C mouth, this is the ID of the C block.
-    /// If the block is an input to another block, this is the ID of that other block.
+    /// If the block is a stack block and is preceded, this is the Id of the preceding block.
+    /// If the block is the first stack block in a C mouth, this is the Id of the C block.
+    /// If the block is an input to another block, this is the Id of that other block.
     /// Otherwise it is none.
-    parent: Option<ID>,
+    parent: Option<Id>,
 
     /// See [`BlockInput`]
-    inputs: FieldHashMap<BlockInput>,
+    inputs: StringHashMap<BlockInput>,
 
     /// See [`BlockField`]
-    fields: FieldHashMap<BlockField>,
+    fields: StringHashMap<BlockField>,
 
     /// True if this is a shadow block and false otherwise.
     shadow: bool,
@@ -81,7 +61,7 @@ pub struct BlockInput {
     shadow: ShadowInputType,
 
     /// Inputs
-    inputs: Vec<Option<IDOrValue>>
+    inputs: Vec<Option<IdOrValue>>
 }
 
 impl BlockInput {
@@ -92,12 +72,12 @@ impl BlockInput {
 }
 
 /// Used for [`BlockInput`]
-/// When the input could be either [`ID`] or [`BlockInputValue`]
+/// When the input could be either [`Id`] or [`BlockInputValue`]
 #[derive(Debug, Clone, PartialEq, Deserialize, Serialize)]
 #[serde(untagged)]
-pub enum IDOrValue {
-    /// When it's [`ID`]
-    ID(ID),
+pub enum IdOrValue {
+    /// When it's [`Id`]
+    Id(Id),
     /// When it's [`BlockInputValue`]
     Value(BlockInputValue),
 }
@@ -123,7 +103,7 @@ impl<'de> Visitor<'de> for BlockInputVisitor {
             ))?;
 
         let mut inputs = vec![];
-        while let Some(v) = seq.next_element::<Option<IDOrValue>>()? {
+        while let Some(v) = seq.next_element::<Option<IdOrValue>>()? {
             inputs.push(v) 
         }
 
@@ -169,12 +149,8 @@ impl Serialize for BlockInput {
 /// 
 /// This documentation might not be completed or is completed, idk.
 /// Scratch wiki didn't tell anything about this.
-#[derive(Debug, Clone, PartialEq)]
-#[cfg_attr(
-    feature = "json",
-    derive(Deserialize_repr, Serialize_repr),
-    repr(u8)
-)]
+#[derive(Debug, Clone, PartialEq, Deserialize_repr, Serialize_repr)]
+#[repr(u8)]
 pub enum ShadowInputType {
     /// There is a shadow
     Shadow = 1,
@@ -237,16 +213,16 @@ pub enum BlockInputValue {
         /// Name of the broadcast
         name: Name,
 
-        /// ID of the broadcast
-        id: ID,
+        /// Id of the broadcast
+        id: Id,
     },
 
     /// Variable input
     Variable {
         /// Name of the variable
         name: Name,
-        /// ID of the variable
-        id: ID,
+        /// Id of the variable
+        id: Id,
         /// Position X of the variable if top_level
         x: Option<Number>,
         /// Position y of the variable if top_level
@@ -257,8 +233,8 @@ pub enum BlockInputValue {
     List {
         /// Name of the list
         name: Name,
-        /// ID of the list
-        id: ID,
+        /// Id of the list
+        id: Id,
         /// Position X of the variable if top_level
         x: Option<Number>,
         /// Position y of the variable if top_level
@@ -358,12 +334,12 @@ impl<'de> Visitor<'de> for BlockInputValueVisitor {
 
         let vtype: u8 = seq_next_element_error(
             &mut seq, 0,
-            "Expecting 2 or more elements for block input value with any ID"
+            "Expecting 2 or more elements for block input value with any Id"
         )?;
         
         let value = seq_next_element_error(
             &mut seq, 1,
-            "Expecting 2 or more elements for block input value with any ID"
+            "Expecting 2 or more elements for block input value with any Id"
         )?;
         
         let res = match vtype {
@@ -377,11 +353,11 @@ impl<'de> Visitor<'de> for BlockInputValueVisitor {
             11 => {
                 let id = seq_next_element_error(
                     &mut seq, 3,
-                    "Expecting 3 or more elements for block input value with ID 11"
+                    "Expecting 3 or more elements for block input value with Id 11"
                 )?;
 
                 let name = match value {
-                    Value::String(s) => s,
+                    Value::Text(s) => s,
                     Value::Number(_) => return Err(
                         A::Error::invalid_value(
                             serde::de::Unexpected::Other("number"),
@@ -390,17 +366,17 @@ impl<'de> Visitor<'de> for BlockInputValueVisitor {
                     ),
                 };
 
-                Broadcast { name: Name::new(name), id }
+                Broadcast { name: Name(name), id }
             },
             12 => {
                 let id = seq_next_element_error(
                     &mut seq, 3,
-                    "Expecting 3 or 5 or more elements for block input value with ID 12 - 13 inclusive"
+                    "Expecting 3 or 5 or more elements for block input value with Id 12 - 13 inclusive"
                 )?;
                 let x = seq.next_element::<Number>()?;
                 let y = seq.next_element::<Number>()?;
                 let name = match value {
-                    Value::String(s) => s,
+                    Value::Text(s) => s,
                     Value::Number(_) => return Err(
                         A::Error::invalid_value(
                             serde::de::Unexpected::Other("number"),
@@ -408,17 +384,17 @@ impl<'de> Visitor<'de> for BlockInputValueVisitor {
                         )
                     ),
                 };
-                Variable { name: Name::new(name), id, x, y }
+                Variable { name: Name(name), id, x, y }
             },
             13 => {
                 let id = seq_next_element_error(
                     &mut seq, 3,
-                    "Expecting 3 or 5 or more elements for block input value with ID 12 - 13 inclusive"
+                    "Expecting 3 or 5 or more elements for block input value with Id 12 - 13 inclusive"
                 )?;
                 let x = seq.next_element::<Number>()?;
                 let y = seq.next_element::<Number>()?;
                 let name = match value {
-                    Value::String(s) => s,
+                    Value::Text(s) => s,
                     Value::Number(_) => return Err(
                         A::Error::invalid_value(
                             serde::de::Unexpected::Other("number"),
@@ -426,7 +402,7 @@ impl<'de> Visitor<'de> for BlockInputValueVisitor {
                         )
                     ),
                 };
-                List { name: Name::new(name), id, x, y }
+                List { name: Name(name), id, x, y }
             },
             v => return Err(A::Error::invalid_value(
                 serde::de::Unexpected::Unsigned(v.into()),
@@ -490,18 +466,18 @@ impl Serialize for BlockInputValue {
 /// Field of the block
 #[derive(Debug, Clone, PartialEq)]
 pub enum BlockField {
-    /// Field when ID are sometimes needed
-    WithID {
+    /// Field when Id are sometimes needed
+    WithId {
         /// Value of the field
         value: Value,
 
         /// For certain fields,
         /// such as variable and broadcast dropdown menus,
-        /// there is also a second element, which is the ID of the field's value.
-        id: Option<ID>,
+        /// there is also a second element, which is the Id of the field's value.
+        id: Option<Id>,
     },
-    /// Field with no ID needed
-    NoID {
+    /// Field with no Id needed
+    NoId {
         /// Value of the field
         value: Value,
     }
@@ -512,19 +488,19 @@ impl BlockField {
     #[inline(always)]
     pub fn value(&self) -> &Value {
         match self {
-            BlockField::WithID { value, id: _ } => value,
-            BlockField::NoID { value } => value,
+            BlockField::WithId { value, id: _ } => value,
+            BlockField::NoId { value } => value,
         }
     }
 
     /// For certain fields,
     /// such as variable and broadcast dropdown menus,
-    /// there is also a second element, which is the ID of the field's value.
+    /// there is also a second element, which is the Id of the field's value.
     #[inline(always)]
-    pub fn id(&self) -> Option<&ID> {
+    pub fn id(&self) -> Option<&Id> {
         match self {
-            BlockField::WithID { value: _, id } => id.as_ref(),
-            BlockField::NoID { value: _ } => None,
+            BlockField::WithId { value: _, id } => id.as_ref(),
+            BlockField::NoId { value: _ } => None,
         }
     }
 }
@@ -548,11 +524,11 @@ impl<'de> Visitor<'de> for BlockFieldVisitor {
             .ok_or_else(|| A::Error::invalid_length(1,
                 &"length 1 or 2 for BlockField"
             ))?;
-        let id = seq.next_element::<Option<ID>>()?;
+        let id = seq.next_element::<Option<Id>>()?;
 
         Ok(match id {
-            Some(id) => BlockField::WithID { value, id },
-            None => BlockField::NoID { value },
+            Some(id) => BlockField::WithId { value, id },
+            None => BlockField::NoId { value },
         })
     }
 }
@@ -574,13 +550,13 @@ impl Serialize for BlockField {
         use serde::ser::SerializeSeq;
         
         match self {
-            BlockField::WithID { value, id } => {
+            BlockField::WithId { value, id } => {
                 let mut seq = serializer.serialize_seq(Some(2))?;
                 seq.serialize_element(value)?;
                 seq.serialize_element(id)?;
                 seq.end()
             },
-            BlockField::NoID { value } => {
+            BlockField::NoId { value } => {
                 let mut seq = serializer.serialize_seq(Some(1))?;
                 seq.serialize_element(value)?;
                 seq.end()
@@ -590,35 +566,22 @@ impl Serialize for BlockField {
 }
 
 /// Mutation for procedural block (custom block) or stop block
-#[derive(Debug, Clone, PartialEq, Getters)]
-#[cfg_attr(
-    feature = "json",
-    derive(Deserialize, Serialize),
-    serde(rename_all = "camelCase")
-)]
+#[derive(Debug, Clone, PartialEq, Getters, Deserialize, Serialize)]
+#[serde(rename_all = "camelCase")]
 #[get = "pub"]
 pub struct BlockMutation {
     /// Always equal to "mutation".
-    #[cfg_attr(
-        feature = "json",
-        serde(skip_deserializing)
-    )]
+    #[serde(skip_deserializing)]
     #[getset(skip)]
-    tag_name: ConstStr_mutation,
+    tag_name: utils::ConstStr_mutation,
 
     /// Seems to always be an empty array.
-    #[cfg_attr(
-        feature = "json",
-        serde(skip_deserializing)
-    )]
+    #[serde(skip_deserializing)]
     #[getset(skip)]
     children: [(); 0],
 
     /// See [`BlockMutationEnum`]
-    #[cfg_attr(
-        feature = "json",
-        serde(flatten)
-    )]
+    #[serde(flatten)]
     mutation_enum: BlockMutationEnum,
 }
 
@@ -637,7 +600,7 @@ pub enum BlockMutationEnum {
             deserialize_with = "deserialize_json_str",
             serialize_with = "serialize_json_str",
         )]
-        argumentids: Vec<ID>,
+        argumentids: Vec<Id>,
 
         /// An array of the names of the arguments.
         #[serde(
@@ -669,14 +632,11 @@ pub enum BlockMutationEnum {
         proccode: String,
 
         /// An array of the ids of the arguments; these can also be found in the input property of the main block.
-        #[cfg_attr(
-            feature = "json", 
-            serde(
-                deserialize_with = "deserialize_json_str",
-                serialize_with = "serialize_json_str",
-            )
+        #[serde(
+            deserialize_with = "deserialize_json_str",
+            serialize_with = "serialize_json_str"
         )]
-        argumentids: Vec<ID>,
+        argumentids: Vec<Id>,
         
         /// Whether to run the block without screen refresh or not.
         #[serde(
@@ -706,7 +666,7 @@ where
 {
     use serde::de::Error;
 
-    let v = SerdeValue::deserialize(de)?;
+    let v = Json::deserialize(de)?;
     let s = v.as_str()
         .ok_or_else(|| D::Error::invalid_value(
             serde::de::Unexpected::Other(&v.to_string()),

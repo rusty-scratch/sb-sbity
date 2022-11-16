@@ -1,7 +1,7 @@
 use std::{collections::HashMap, marker::PhantomData, fmt};
-use serde::{de::{Visitor, MapAccess}, Deserializer};
-
 use crate::model::prelude::*;
+use serde::de::MapAccess;
+use serde::ser::SerializeMap;
 
 /// HashMap<String, V>
 #[derive(Debug, PartialEq, Clone)]
@@ -76,7 +76,7 @@ where
     }
 }
 
-impl<V> Serialize for StringHashMap<V>
+impl<V: Serialize> Serialize for StringHashMap<V>
 {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where

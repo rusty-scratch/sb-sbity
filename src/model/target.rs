@@ -1,11 +1,13 @@
 use crate::model::prelude::*;
-use crate::model::id_hashmap::StringHashMap;
+use crate::model::string_hashmap::StringHashMap;
 use crate::model::script_object::{
     Broadcast,
     Comment,
     List,
     Variable,
+    block::Block,
 };
+use crate::model::asset::{Costume, Sound};
 
 #[derive(Debug, PartialEq, Deserialize, Serialize)]
 pub struct Project {
@@ -110,13 +112,13 @@ pub struct Sprite {
 
     /// The x-coordinate. Defaults to 0.
     pub x: Number,
-    
+
     /// The y-coordinate. Defaults to 0.
     pub y: Number,
-    
+
     /// The sprite's size as a percentage. Defaults to 100.
     pub size: Number,
-    
+
     /// The sprite's direction in degrees clockwise from up. Defaults to 90.
     pub direction: Number,
 

@@ -1,7 +1,7 @@
 use serde_tuple::{Deserialize_tuple, Serialize_tuple};
 use crate::model::prelude::*;
 
-mod block;
+pub mod block;
 
 /// Variable
 #[derive(Debug, PartialEq, Clone, Serialize_tuple, Deserialize_tuple)]
