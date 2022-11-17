@@ -53,11 +53,11 @@ pub struct Monitor {
 pub enum MonitorOpCode {
     /// User defined variable
     #[serde(rename = "data_variable")]
-    Variable,
+    DataVariable,
 
     /// User defiend list
     #[serde(rename = "data_listcontents")]
-    ListContents,
+    DataListContents,
 
     /// Sprite's variable x position
     #[serde(rename = "motion_xposition")]

@@ -8,60 +8,59 @@ use crate::model::prelude::*;
 #[get = "pub"]
 pub struct Block {
     /// A string naming the block.
-    opcode: OpCode<String>,
+    pub opcode: OpCode<String>,
 
     /// The Id of the next block or null.
-    next: Option<Id>,
+    pub next: Option<Id>,
 
     /// If the block is a stack block and is preceded, this is the Id of the preceding block.
     /// If the block is the first stack block in a C mouth, this is the Id of the C block.
     /// If the block is an input to another block, this is the Id of that other block.
     /// Otherwise it is none.
-    parent: Option<Id>,
+    pub parent: Option<Id>,
 
     /// See [`BlockInput`]
-    inputs: StringHashMap<BlockInput>,
+    pub inputs: StringHashMap<BlockInput>,
 
     /// See [`BlockField`]
-    fields: StringHashMap<BlockField>,
+    pub fields: StringHashMap<BlockField>,
 
     /// True if this is a shadow block and false otherwise.
-    shadow: bool,
+    pub shadow: bool,
 
     /// False if the block has a parent and true otherwise.
-    top_level: bool,
+    pub top_level: bool,
 
     /// Mutations are present some blocks that has a certain opcode.
     /// See [`BlockMutationEnum`] for availiable mutations.
     #[serde(default, skip_serializing_if = "Option::is_none")]
-    mutation: Option<BlockMutation>,
+    pub mutation: Option<BlockMutation>,
 
     /// X Position of the top level block.
     #[serde(
         skip_serializing_if = "Option::is_none",
         default
     )]
-    x: Option<Number>,
+    pub x: Option<Number>,
 
     /// Y Position of the top level block.
     #[serde(
         skip_serializing_if = "Option::is_none",
         default
     )]
-    y: Option<Number>,
+    pub y: Option<Number>,
 }
 
 /// A struct representing inputs into which other blocks may be dropped, including C mouths.
 /// 
 /// I'm still figuring this out
-#[derive(Debug, Clone, PartialEq, Getters)]
-#[get = "pub"]
+#[derive(Debug, Clone, PartialEq)]
 pub struct BlockInput {
     /// See [`ShadowInputType`]
-    shadow: ShadowInputType,
+    pub shadow: ShadowInputType,
 
     /// Inputs
-    inputs: Vec<Option<IdOrValue>>
+    pub inputs: Vec<Option<IdOrValue>>
 }
 
 impl BlockInput {
@@ -131,7 +130,7 @@ impl Serialize for BlockInput {
         use serde::ser::SerializeSeq;
         let mut s = serializer.serialize_seq(Some(self.size_hint()))?;
         s.serialize_element(&self.shadow)?;
-        for v in self.inputs() {
+        for v in &self.inputs {
             s.serialize_element(&v)?;
         }
         s.end()
@@ -264,15 +263,15 @@ impl BlockInputValue {
         use BlockInputValue::*;
 
         match self {
-            Number { value: _ } => 1,
-            PositiveNumber { value: _ } => 1,
+            Number          { value: _ } => 1,
+            PositiveNumber  { value: _ } => 1,
             PositiveInteger { value: _ } => 1,
-            Integer { value: _ } => 1,
-            Angle { value: _ } => 1,
-            Color { value: _ } => 1,
-            String { value: _ } => 1,
-            Broadcast { name: _, id: _ } => 2,
-            Variable { name: _, id: _, x, y } => {
+            Integer         { value: _ } => 1,
+            Angle           { value: _ } => 1,
+            Color           { value: _ } => 1,
+            String          { value: _ } => 1,
+            Broadcast       { name: _, id: _ } => 2,
+            Variable        { name: _, id: _, x, y } => {
                 let mut n = 2;
                 if x.is_some() {
                     n += 1
@@ -282,7 +281,7 @@ impl BlockInputValue {
                 }
                 n
             },
-            List { name: _, id: _, x, y } => {
+            List            { name: _, id: _, x, y } => {
                 let mut n = 2;
                 if x.is_some() {
                     n += 1
@@ -568,21 +567,16 @@ impl Serialize for BlockField {
 /// Mutation for procedural block (custom block) or stop block
 #[derive(Debug, Clone, PartialEq, Getters, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
-#[get = "pub"]
 pub struct BlockMutation {
     /// Always equal to "mutation".
-    #[serde(skip_deserializing)]
-    #[getset(skip)]
     tag_name: utils::ConstStr_mutation,
 
     /// Seems to always be an empty array.
-    #[serde(skip_deserializing)]
-    #[getset(skip)]
     children: [(); 0],
 
     /// See [`BlockMutationEnum`]
     #[serde(flatten)]
-    mutation_enum: BlockMutationEnum,
+    pub mutation_enum: BlockMutationEnum,
 }
 
 /// Different mutation has different properties.
