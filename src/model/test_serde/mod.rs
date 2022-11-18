@@ -32,8 +32,11 @@ use crate::model::{
         List, Variable,
         block::{
             Block,
+            BlockField,
+            BlockInput,
             BlockInputValue,
             BlockMutation,
+            BlockMutationEnum,
             ShadowInputType,
         },
     }
@@ -56,7 +59,7 @@ where T: DeserializeOwned + Serialize + PartialEq + Debug
 
 macro_rules! test_json {
     () => {};
-    ($($type:ty {$($fname:ident => $json:expr),*}),*) => {
+    ($($type:ty {$($fname:ident => $json:expr),*})*) => {
         $(
             $(
                 #[test]
@@ -72,7 +75,6 @@ fn from_file<P: AsRef<std::path::Path>>(p: P) -> String {
     std::fs::read_to_string(p).unwrap()
 }
 
-
 #[cfg(test)] mod hashmap;
 #[cfg(test)] mod utils;
 #[cfg(test)] mod id;
@@ -80,6 +82,7 @@ fn from_file<P: AsRef<std::path::Path>>(p: P) -> String {
 #[cfg(test)] mod monitor;
 #[cfg(test)] mod asset;
 #[cfg(test)] mod script_data;
+#[cfg(test)] mod block;
 
 test_json!{
     // intermediate_test(intermediate::Project):

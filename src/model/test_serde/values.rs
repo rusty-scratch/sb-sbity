@@ -3,14 +3,14 @@ use super::*;
 test_json!{
     Name {
        name => r#""johndoe""#
-    },
+    }
     
     Number {
         number1 => "25",
         number2 => "-25",
         number3 => "234.23498327",
         number4 => "-234.23498327"
-    },
+    }
 
     Value {
         value_int_string => r#""230""#,

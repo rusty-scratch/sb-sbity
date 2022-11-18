@@ -11,7 +11,7 @@ test_json!{
         monitor_mode_large   => "large",
         monitor_mode_slider  => "slider",
         monitor_mode_list    => "list"
-    },
+    }
     
     MonitorOpCode {
         monitor_opcode_data_variable            => "data_variable",
@@ -25,7 +25,7 @@ test_json!{
         monitor_opcode_sensing_loudness         => "sensing_loudness",
         monitor_opcode_sensing_timer            => "sensing_timer",
         monitor_opcode_sensing_username         => "sensing_username"
-    },
+    }
     
     Monitor {
         monitor_slider_local_int =>

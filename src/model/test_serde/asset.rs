@@ -22,7 +22,7 @@ test_json!{
                 "rotationCenterX":37.525696938976154,
                 "rotationCenterY":47.345544038121545
             }"#
-    },
+    }
 
     Sound {
         sound =>
