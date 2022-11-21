@@ -68,18 +68,35 @@ fn json_to<'a>(json: &'a Json, path: &JsonPath) -> Option<&'a Json> {
     })
 }
 
+enum Content<'a> {
+    Array(&'a Vec<Json>),
+    Object(&'a serde_json::Map<String, Json>),
+    Else(&'a Json),
+}
+
+impl<'a> Content<'a> {
+    pub fn from_json(json: &'a Json) -> Self {
+        match json {
+            Json::Array(a) => Content::Array(a),
+            Json::Object(o) => Content::Object(o),
+            e => Content::Else(e),
+        }
+    }
+}
+
 fn main() -> Result<()> {
     let cfg: &Cfg = &get_cfg()?; // make it reference so it cannot be manipulated
     let input: Json = get_input_json()?;
 
     let Cfg {
         func_prefix,
-        path_to_array,
-        path_to_content,
+        path_to_cotent,
         content_not_found_action,
     } = cfg;
     
-    let Some(array) = json_to(&input, path_to_array) else {
+    let content = Content::from_json(&input);
+    
+    let Some(array) = json_to(&input, path_to_cotent) else {
         return Err(Error::PathToArrayNotExist);
     };
 
