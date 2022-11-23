@@ -45,29 +45,7 @@ fn get_cfg() -> Result<Cfg> {
     Ok(cfg)
 }
 
-fn json_to<'a>(json: &'a Json, path: &JsonPath) -> Option<&'a Json> {
-    path.0.iter().fold(Some(json), |json, pathseg| {
-        let Some(json) = json else {
-            return None
-        };
-
-        match pathseg {
-            JsonPathSeg::String(s) => {
-                let Some(object) = json.as_object() else {
-                    return None
-                };
-                object.get(s)
-            },
-            JsonPathSeg::Index(i) => {
-                let Some(array) = json.as_array() else {
-                    return None
-                };
-                array.get(*i)
-            },
-        }
-    })
-}
-
+#[derive(Debug, Clone, Copy)]
 enum Content<'a> {
     Array(&'a Vec<Json>),
     Object(&'a serde_json::Map<String, Json>),
@@ -81,6 +59,113 @@ impl<'a> Content<'a> {
             Json::Object(o) => Content::Object(o),
             e => Content::Else(e),
         }
+    }
+
+    fn to(&self, path: &JsonPath) -> Option<Self> {
+        path.0.iter().fold(Some(*self), |json, pathseg| {
+            let Some(json) = json else {
+                return None
+            };
+
+            match pathseg {
+                JsonPathSeg::String(s) => {
+                    let Self::Object(object) = self else {
+                        return None
+                    };
+                    let json = object.get(s)?;
+                    Some(Content::from_json(json))
+                },
+                JsonPathSeg::Index(i) => {
+                    let Self::Array(array) = self else {
+                        return None
+                    };
+                    let json = array.get(*i)?;
+                    Some(Content::from_json(json))
+                },
+            }
+        })
+    }
+    
+    /// Recurisve paths on possible paths to iterate on
+    /// Invalid path will be skip
+    pub fn iter(&self, paths: &[PathWithPriotiy]) -> ContentIter {
+        ContentIter {
+            top_content: self,
+            possible_path: paths,
+            iters: Vec::with_capacity(paths.len()),
+            init: true,
+        }
+    }
+}
+
+impl<'a> From<&'a Json> for Content<'a> {
+    fn from(json: &'a Json) -> Self {
+        Content::from_json(json)
+    }
+}
+
+struct PathWithPriotiy {
+    pub path: JsonPath,
+    pub priority: PathPriority,
+}
+
+enum PathPriority {
+    /// Will return error if not found
+    Requried,
+    /// Will skip if not found
+    Optional,
+}
+
+enum ArrayObjectIter<'a> {
+    Array(std::slice::Iter<'a, Json>),
+    Object(serde_json::map::Iter<'a>),
+}
+
+impl<'a> Iterator for ArrayObjectIter<'a> {
+    type Item = &'a Json;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        match self {
+            ArrayObjectIter::Array(a) => a.next(),
+            ArrayObjectIter::Object(o) => o.next().map(|(_, e)| e),
+        }
+    }
+}
+
+enum ContentIterError {
+    PathRequiredButNotFound(JsonPath),
+}
+
+struct ContentIter<'a> {
+    top_content: &'a Content<'a>,
+    possible_path: &'a [PathWithPriotiy],
+    iters: Vec<Option<ArrayObjectIter<'a>>>,
+    init: bool,
+}
+
+impl<'a> Iterator for ContentIter<'a> {
+    type Item = std::result::Result<Content<'a>, ContentIterError>;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        if self.init {
+            if let Some(iter) = self.iters.last() {
+                todo!()
+            } else {
+                let iter = match self.possible_path.first() {
+                    Some(PathWithPriotiy { path, priority }) => match self.top_content.to(path) {
+                        Some(content) => todo!(),
+                        None => return None,
+                    },
+                    None => ,
+                };
+                self.iters.push();
+                self.next()
+            }
+        } else {
+            
+        }
+        
+        todo!()
     }
 }
 
