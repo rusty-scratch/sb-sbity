@@ -1,7 +1,7 @@
-use cfg::ContentNotFoundAction;
+use serde::de::Visitor;
+use serde::Deserialize;
 use serde_json::Value as Json;
 use std::fs::File;
-use std::path::PathBuf;
 use std::io::{Write, Read};
 
 use crate::prelude::*;
@@ -45,6 +45,7 @@ fn get_cfg() -> Result<Cfg> {
     Ok(cfg)
 }
 
+/// Inside of content is all reference to json
 #[derive(Debug, Clone, Copy)]
 enum Content<'a> {
     Array(&'a Vec<Json>),
@@ -53,6 +54,14 @@ enum Content<'a> {
 }
 
 impl<'a> Content<'a> {
+    pub fn to_cloned_json(&self) -> Json {
+        match self {
+            Content::Array(a) => Json::Array((*a).clone()),
+            Content::Object(o) => Json::Object((*o).clone()),
+            Content::Else(j) => (*j).clone(),
+        }
+    }
+    
     pub fn from_json(json: &'a Json) -> Self {
         match json {
             Json::Array(a) => Content::Array(a),
@@ -69,32 +78,44 @@ impl<'a> Content<'a> {
 
             match pathseg {
                 JsonPathSeg::String(s) => {
-                    let Self::Object(object) = self else {
+                    let Self::Object(object) = json else {
                         return None
                     };
-                    let json = object.get(s)?;
-                    Some(Content::from_json(json))
+                    let next_json = object.get(s)?;
+                    Some(Content::from_json(next_json))
                 },
                 JsonPathSeg::Index(i) => {
-                    let Self::Array(array) = self else {
+                    let Self::Array(array) = json else {
                         return None
                     };
-                    let json = array.get(*i)?;
-                    Some(Content::from_json(json))
+                    let next_json = array.get(*i)?;
+                    Some(Content::from_json(next_json))
                 },
             }
         })
     }
     
-    /// Recurisve paths on possible paths to iterate on
-    /// Invalid path will be skip
-    pub fn iter(&self, paths: &[PathWithPriotiy]) -> ContentIter {
-        ContentIter {
-            top_content: self,
-            possible_path: paths,
-            iters: Vec::with_capacity(paths.len()),
-            init: true,
+    /// None when the content is not [`Content::Array`] or [`Content::Object`]
+    pub fn iter(&self) -> Option<ArrayObjectIter<'a>> {
+        match self {
+            Content::Array(a) => Some(ArrayObjectIter::Array(a.iter())),
+            Content::Object(o) => Some(ArrayObjectIter::Object(o.iter())),
+            _ => None
         }
+    }
+    
+    /// Recurisve paths on possible paths to iterate on
+    /// None when the content is not [`Content::Array`] or [`Content::Object`]
+    pub fn iter_paths(&'a self, paths: &'a [PathWithPriotiy]) -> Option<ContentRecursiveIter<'a>> {
+        let mut iter_vec = Vec::with_capacity(paths.len());
+        iter_vec.push(self.iter()?);
+        Some(ContentRecursiveIter {
+            top_content: *self,
+            curr_content: *self,
+            possible_path: paths,
+            iters: iter_vec,
+            init: true,
+        })
     }
 }
 
@@ -104,16 +125,45 @@ impl<'a> From<&'a Json> for Content<'a> {
     }
 }
 
-struct PathWithPriotiy {
-    pub path: JsonPath,
-    pub priority: PathPriority,
-}
+#[derive(Debug, Deserialize)]
+pub struct PathWithPriotiy(JsonPath, PathPriority);
 
+#[derive(Debug)]
 enum PathPriority {
     /// Will return error if not found
     Requried,
     /// Will skip if not found
     Optional,
+}
+
+struct PathPriorityVisitor;
+
+impl<'de> Visitor<'de> for PathPriorityVisitor {
+    type Value = PathPriority;
+
+    fn expecting(&self, formatter: &mut std::fmt::Formatter) -> std::fmt::Result {
+        formatter.write_str("bool")
+    }
+    
+    fn visit_bool<E>(self, v: bool) -> std::result::Result<Self::Value, E>
+    where
+        E: serde::de::Error,
+    {
+        if v {
+            Ok(PathPriority::Requried)
+        } else {
+            Ok(PathPriority::Optional)
+        }
+    }
+}
+
+impl<'de> Deserialize<'de> for PathPriority {
+    fn deserialize<D>(deserializer: D) -> std::result::Result<Self, D::Error>
+    where
+        D: serde::Deserializer<'de>
+    {
+        deserializer.deserialize_bool(PathPriorityVisitor)
+    }
 }
 
 enum ArrayObjectIter<'a> {
@@ -132,40 +182,44 @@ impl<'a> Iterator for ArrayObjectIter<'a> {
     }
 }
 
+#[derive(Debug, thiserror::Error)]
 enum ContentIterError {
+    #[error("path \"{0}\" is required but not found")]
     PathRequiredButNotFound(JsonPath),
 }
 
-struct ContentIter<'a> {
-    top_content: &'a Content<'a>,
+struct ContentRecursiveIter<'a> {
+    top_content: Content<'a>,
+    curr_content: Content<'a>,
     possible_path: &'a [PathWithPriotiy],
-    iters: Vec<Option<ArrayObjectIter<'a>>>,
+    iters: Vec<ArrayObjectIter<'a>>,
     init: bool,
 }
 
-impl<'a> Iterator for ContentIter<'a> {
+impl<'a> Iterator for ContentRecursiveIter<'a> {
     type Item = std::result::Result<Content<'a>, ContentIterError>;
 
     fn next(&mut self) -> Option<Self::Item> {
-        if self.init {
-            if let Some(iter) = self.iters.last() {
-                todo!()
-            } else {
-                let iter = match self.possible_path.first() {
-                    Some(PathWithPriotiy { path, priority }) => match self.top_content.to(path) {
-                        Some(content) => todo!(),
-                        None => return None,
+        // Iters on initialize is guranteed to always have 1 iter
+        // If not that mean it has ended
+        let last_idx = self.iters.len().checked_sub(1)?;
+        let resulting_content = match self.possible_path.get(last_idx) {
+            Some(PathWithPriotiy(path, priority)) => {
+                match self.curr_content.to(path) {
+                    Some(next_content) => Some(Ok(next_content)),
+                    None => match priority {
+                        PathPriority::Requried => Some(Err(ContentIterError::PathRequiredButNotFound(path.clone()))),
+                        PathPriority::Optional => self.next(),
                     },
-                    None => ,
-                };
-                self.iters.push();
-                self.next()
-            }
-        } else {
-            
+                }
+            },
+            None => self.iters[last_idx].next()
+                .map(|j| Ok(j.into())),
+        };
+        if let Some(Ok(c)) = resulting_content {
+            self.curr_content = c;
         }
-        
-        todo!()
+        resulting_content
     }
 }
 
@@ -175,40 +229,49 @@ fn main() -> Result<()> {
 
     let Cfg {
         func_prefix,
-        path_to_cotent,
-        content_not_found_action,
+        path_to_content,
     } = cfg;
     
     let content = Content::from_json(&input);
-    
-    let Some(array) = json_to(&input, path_to_cotent) else {
-        return Err(Error::PathToArrayNotExist);
-    };
-
-    let Some(array) = array.as_array() else {
-        return Err(Error::ItemIsNotArray);
-    };
+    let iter = content.iter_paths(&path_to_content)
+        .ok_or(Error::ItemIsNotIteratable)?;
     
     let mut s = String::new();
-    for (i, e) in array.iter().enumerate() {
-        let Some(e) = json_to(e, path_to_content) else {
-            match content_not_found_action {
-                ContentNotFoundAction::Skip => continue,
-                ContentNotFoundAction::ErrorOut => {
-                    return Err(Error::PathToContentNotExist)
-                }
-            }
-        };
-        let mut the_func = f!("{func_prefix}{i} => \n");
-        let etxt = serde_json::to_string_pretty(e).unwrap();
-        let etxt: String = etxt
-            .lines()
-            .map(|s| f!("    {s}\n"))
-            .collect();
-        the_func.push_str(&etxt);
-        the_func.push('\n');
-        s.push_str(&the_func);
+    for content in iter {
+        let content = content?;
+        s.push_str(&serde_json::to_string_pretty(&content.to_cloned_json()).unwrap());
+        s.push('\n');
     }
-    
     write_to_output(s.as_bytes())
+    
+    // let Some(array) = json_to(&input, path_to_cotent) else {
+    //     return Err(Error::PathToArrayNotExist);
+    // };
+
+    // let Some(array) = array.as_array() else {
+    //     return Err(Error::ItemIsNotArray);
+    // };
+    
+    // let mut s = String::new();
+    // for (i, e) in array.iter().enumerate() {
+    //     let Some(e) = json_to(e, path_to_content) else {
+    //         match content_not_found_action {
+    //             ContentNotFoundAction::Skip => continue,
+    //             ContentNotFoundAction::ErrorOut => {
+    //                 return Err(Error::PathToContentNotExist)
+    //             }
+    //         }
+    //     };
+    //     let mut the_func = f!("{func_prefix}{i} => \n");
+    //     let etxt = serde_json::to_string_pretty(e).unwrap();
+    //     let etxt: String = etxt
+    //         .lines()
+    //         .map(|s| f!("    {s}\n"))
+    //         .collect();
+    //     the_func.push_str(&etxt);
+    //     the_func.push('\n');
+    //     s.push_str(&the_func);
+    // }
+    
+    // write_to_output(s.as_bytes())
 }

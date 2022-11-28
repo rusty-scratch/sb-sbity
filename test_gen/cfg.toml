@@ -1,4 +1,4 @@
 func_prefix = "hallo"
-path_to_array = []
-path_to_content = []
-content_not_found_action = "ErrorOut"
+path_to_content = [
+  [["fields"], false]
+]
