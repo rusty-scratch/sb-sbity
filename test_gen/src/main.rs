@@ -6,7 +6,9 @@ use std::io::{Write, Read};
 
 use crate::prelude::*;
 use crate::cfg::Cfg;
-use crate::cfg::{JsonPath, JsonPathSeg};
+use crate::path::{Path, PathSegment, PathWithPriotiy, PathPriority};
+
+mod path;
 
 mod prelude;
 mod error;
@@ -70,21 +72,21 @@ impl<'a> Content<'a> {
         }
     }
 
-    fn to(&self, path: &JsonPath) -> Option<Self> {
+    fn to(&self, path: &Path) -> Option<Self> {
         path.0.iter().fold(Some(*self), |json, pathseg| {
             let Some(json) = json else {
                 return None
             };
 
             match pathseg {
-                JsonPathSeg::String(s) => {
+                PathSegment::String(s) => {
                     let Self::Object(object) = json else {
                         return None
                     };
                     let next_json = object.get(s)?;
                     Some(Content::from_json(next_json))
                 },
-                JsonPathSeg::Index(i) => {
+                PathSegment::Index(i) => {
                     let Self::Array(array) = json else {
                         return None
                     };
@@ -125,46 +127,6 @@ impl<'a> From<&'a Json> for Content<'a> {
     }
 }
 
-#[derive(Debug, Deserialize)]
-pub struct PathWithPriotiy(JsonPath, PathPriority);
-
-#[derive(Debug)]
-enum PathPriority {
-    /// Will return error if not found
-    Requried,
-    /// Will skip if not found
-    Optional,
-}
-
-struct PathPriorityVisitor;
-
-impl<'de> Visitor<'de> for PathPriorityVisitor {
-    type Value = PathPriority;
-
-    fn expecting(&self, formatter: &mut std::fmt::Formatter) -> std::fmt::Result {
-        formatter.write_str("bool")
-    }
-    
-    fn visit_bool<E>(self, v: bool) -> std::result::Result<Self::Value, E>
-    where
-        E: serde::de::Error,
-    {
-        if v {
-            Ok(PathPriority::Requried)
-        } else {
-            Ok(PathPriority::Optional)
-        }
-    }
-}
-
-impl<'de> Deserialize<'de> for PathPriority {
-    fn deserialize<D>(deserializer: D) -> std::result::Result<Self, D::Error>
-    where
-        D: serde::Deserializer<'de>
-    {
-        deserializer.deserialize_bool(PathPriorityVisitor)
-    }
-}
 
 enum ArrayObjectIter<'a> {
     Array(std::slice::Iter<'a, Json>),
@@ -185,7 +147,7 @@ impl<'a> Iterator for ArrayObjectIter<'a> {
 #[derive(Debug, thiserror::Error)]
 enum ContentIterError {
     #[error("path \"{0}\" is required but not found")]
-    PathRequiredButNotFound(JsonPath),
+    PathRequiredButNotFound(Path),
 }
 
 struct ContentRecursiveIter<'a> {
@@ -274,4 +236,14 @@ fn main() -> Result<()> {
     // }
     
     // write_to_output(s.as_bytes())
+}
+
+#[cfg(test)]
+mod test {
+    use super::Json;
+    use super::Path;
+    
+    fn json_to() {
+        let path = Path::from(vec![]);
+    }
 }
