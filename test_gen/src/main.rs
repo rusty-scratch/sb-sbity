@@ -47,47 +47,46 @@ fn get_cfg() -> Result<Cfg> {
     Ok(cfg)
 }
 
-/// Inside of content is all reference to json
 #[derive(Debug, Clone, Copy)]
 enum Content<'a> {
-    Array(&'a Vec<Json>),
-    Object(&'a serde_json::Map<String, Json>),
-    Else(&'a Json),
+    Array(&'a Json, &'a Vec<Json>),
+    Object(&'a Json, &'a serde_json::Map<String, Json>),
+    Else(&'a Json)
 }
 
 impl<'a> Content<'a> {
-    pub fn to_cloned_json(&self) -> Json {
-        match self {
-            Content::Array(a) => Json::Array((*a).clone()),
-            Content::Object(o) => Json::Object((*o).clone()),
-            Content::Else(j) => (*j).clone(),
-        }
-    }
-    
-    pub fn from_json(json: &'a Json) -> Self {
+    pub fn from_json(json: &'a Json) -> Content<'a> {
         match json {
-            Json::Array(a) => Content::Array(a),
-            Json::Object(o) => Content::Object(o),
+            Json::Array(a) => Content::Array(json, a),
+            Json::Object(o) => Content::Object(json, o),
             e => Content::Else(e),
         }
     }
+    
+    pub fn to_json(&self,) -> &'a Json {
+        match self {
+            Content::Array(j, _) => j,
+            Content::Object(j, _) => j,
+            Content::Else(j) => j,
+        }
+     }
 
-    fn to(&self, path: &Path) -> Option<Self> {
-        path.0.iter().fold(Some(*self), |json, pathseg| {
-            let Some(json) = json else {
+    fn to(&self, path: &Path) -> Option<Content<'a>> {
+        path.0.iter().fold(Some(*self), |content, pathseg| {
+            let Some(content) = content else {
                 return None
             };
 
             match pathseg {
                 PathSegment::String(s) => {
-                    let Self::Object(object) = json else {
+                    let Content::Object(_, object) = content else {
                         return None
                     };
                     let next_json = object.get(s)?;
                     Some(Content::from_json(next_json))
                 },
                 PathSegment::Index(i) => {
-                    let Self::Array(array) = json else {
+                    let Content::Array(_, array) = content else {
                         return None
                     };
                     let next_json = array.get(*i)?;
@@ -100,8 +99,8 @@ impl<'a> Content<'a> {
     /// None when the content is not [`Content::Array`] or [`Content::Object`]
     pub fn iter(&self) -> Option<ArrayObjectIter<'a>> {
         match self {
-            Content::Array(a) => Some(ArrayObjectIter::Array(a.iter())),
-            Content::Object(o) => Some(ArrayObjectIter::Object(o.iter())),
+            Content::Array(_, a) => Some(ArrayObjectIter::Array(a.iter())),
+            Content::Object(_, o) => Some(ArrayObjectIter::Object(o.iter())),
             _ => None
         }
     }
@@ -201,7 +200,8 @@ fn main() -> Result<()> {
     let mut s = String::new();
     for content in iter {
         let content = content?;
-        s.push_str(&serde_json::to_string_pretty(&content.to_cloned_json()).unwrap());
+        s.push_str(&serde_json::to_string_pretty(&content.()).unwrap());
+        s.push('\n');
         s.push('\n');
     }
     write_to_output(s.as_bytes())
@@ -238,12 +238,12 @@ fn main() -> Result<()> {
     // write_to_output(s.as_bytes())
 }
 
-#[cfg(test)]
-mod test {
-    use super::Json;
-    use super::Path;
+// #[cfg(test)]
+// mod test {
+//     use super::Json;
+//     use super::Path;
     
-    fn json_to() {
-        let path = Path::from(vec![]);
-    }
-}
+//     fn json_to() {
+//         let path = Path::from(vec![]);
+//     }
+// }
