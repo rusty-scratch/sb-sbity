@@ -3,10 +3,11 @@ use serde::Deserialize;
 use serde_json::Value as Json;
 use std::fs::File;
 use std::io::{Write, Read};
+use std::result::Result as StdResult;
 
 use crate::prelude::*;
 use crate::cfg::Cfg;
-use crate::path::{Path, PathSegment, PathWithPriotiy, PathPriority};
+use crate::path::{Path, Key, PathWithPriotiy, PathPriority};
 
 mod path;
 
@@ -63,7 +64,7 @@ impl<'a> Content<'a> {
         }
     }
     
-    pub fn to_json(&self,) -> &'a Json {
+    pub fn json(&self,) -> &'a Json {
         match self {
             Content::Array(j, _) => j,
             Content::Object(j, _) => j,
@@ -78,14 +79,14 @@ impl<'a> Content<'a> {
             };
 
             match pathseg {
-                PathSegment::String(s) => {
+                Key::String(s) => {
                     let Content::Object(_, object) = content else {
                         return None
                     };
                     let next_json = object.get(s)?;
                     Some(Content::from_json(next_json))
                 },
-                PathSegment::Index(i) => {
+                Key::Int(i) => {
                     let Content::Array(_, array) = content else {
                         return None
                     };
@@ -113,9 +114,8 @@ impl<'a> Content<'a> {
         Some(ContentRecursiveIter {
             top_content: *self,
             curr_content: *self,
-            possible_path: paths,
-            iters: iter_vec,
-            init: true,
+            possible_paths: paths,
+            iter_stack: iter_vec,
         })
     }
 }
@@ -152,30 +152,65 @@ enum ContentIterError {
 struct ContentRecursiveIter<'a> {
     top_content: Content<'a>,
     curr_content: Content<'a>,
-    possible_path: &'a [PathWithPriotiy],
-    iters: Vec<ArrayObjectIter<'a>>,
-    init: bool,
+    possible_paths: &'a [PathWithPriotiy],
+    iter_stack: Vec<ArrayObjectIter<'a>>,
+}
+
+impl<'a> ContentRecursiveIter<'a> {
+    #[inline]
+    fn curr_iter(&'a mut self) -> Option<&'a mut ArrayObjectIter<'a>> {
+        self.iter_stack.last_mut()
+    }
+    
+    fn curr_path(&self) -> Option<&PathWithPriotiy> {
+        let last_idx = self.iter_stack.len().checked_sub(1)?;
+        self.possible_paths.get(last_idx)
+    }
+    
+    #[inline]
+    fn remove_curr_iter(&mut self) {
+        self.iter_stack.pop();
+    }
+    
+    #[inline]
+    fn curr_iter_next(&'a mut self) -> Option<StdResult<Content<'a>, ContentIterError>> {
+        let next_v = self.curr_iter()?.next()
+            .map(|j| Ok(j.into()));
+        if next_v.is_none() {
+            self.remove_curr_iter();
+            return None
+        }
+        next_v
+    }
+    
+    #[inline]
+    fn is_ended(&self) -> bool {
+        // Iters on initialize is guranteed to always have 1 iter
+        // So if there's none that means it's done
+        self.iter_stack.is_empty()
+    }
 }
 
 impl<'a> Iterator for ContentRecursiveIter<'a> {
-    type Item = std::result::Result<Content<'a>, ContentIterError>;
+    type Item = StdResult<Content<'a>, ContentIterError>;
 
     fn next(&mut self) -> Option<Self::Item> {
-        // Iters on initialize is guranteed to always have 1 iter
-        // If not that mean it has ended
-        let last_idx = self.iters.len().checked_sub(1)?;
-        let resulting_content = match self.possible_path.get(last_idx) {
+        if self.is_ended() {
+            return None
+        }
+        
+        let resulting_content = match self.curr_path() {
             Some(PathWithPriotiy(path, priority)) => {
-                match self.curr_content.to(path) {
+                let next_content = self.curr_content.to(path);
+                match next_content {
                     Some(next_content) => Some(Ok(next_content)),
                     None => match priority {
                         PathPriority::Requried => Some(Err(ContentIterError::PathRequiredButNotFound(path.clone()))),
-                        PathPriority::Optional => self.next(),
+                        PathPriority::Optional => self.curr_iter_next(),
                     },
                 }
             },
-            None => self.iters[last_idx].next()
-                .map(|j| Ok(j.into())),
+            None => self.curr_iter_next()
         };
         if let Some(Ok(c)) = resulting_content {
             self.curr_content = c;
@@ -200,7 +235,7 @@ fn main() -> Result<()> {
     let mut s = String::new();
     for content in iter {
         let content = content?;
-        s.push_str(&serde_json::to_string_pretty(&content.()).unwrap());
+        s.push_str(&serde_json::to_string_pretty(&content.json()).unwrap());
         s.push('\n');
         s.push('\n');
     }

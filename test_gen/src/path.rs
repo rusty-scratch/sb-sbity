@@ -3,35 +3,35 @@ use serde::{Deserialize, de::Visitor};
 
 #[derive(Debug, Clone, Deserialize)]
 #[serde(untagged)]
-pub enum PathSegment {
+pub enum Key {
     String(String),
-    Index(usize),
+    Int(usize),
 }
 
-impl From<String> for PathSegment {
+impl From<String> for Key {
     fn from(s: String) -> Self {
-        PathSegment::String(s)
+        Key::String(s)
     }
 }
 
-impl From<&str> for PathSegment {
+impl From<&str> for Key {
     fn from(s: &str) -> Self {
-        PathSegment::String(s.to_string())
+        Key::String(s.to_string())
     }
 }
 
-impl From<usize> for PathSegment {
+impl From<usize> for Key {
     fn from(u: usize) -> Self {
-        PathSegment::Index(u)
+        Key::Int(u)
     }
 }
 
 #[derive(Debug, Clone, Deserialize)]
 #[serde(transparent)]
-pub struct Path(pub Vec<PathSegment>);
+pub struct Path(pub Vec<Key>);
 
-impl From<Vec<PathSegment>> for Path {
-    fn from(v: Vec<PathSegment>) -> Self {
+impl From<Vec<Key>> for Path {
+    fn from(v: Vec<Key>) -> Self {
         Path(v)
     }
 }
@@ -42,8 +42,8 @@ impl std::fmt::Display for Path {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let mut s = self.0.iter().fold(String::new(), |mut s, p| {
             match p {
-                PathSegment::String(key) => s.push_str(key),
-                PathSegment::Index(idx) => s.push_str(&idx.to_string()),
+                Key::String(key) => s.push_str(key),
+                Key::Int(idx) => s.push_str(&idx.to_string()),
             }
             s.push('.');
             s
