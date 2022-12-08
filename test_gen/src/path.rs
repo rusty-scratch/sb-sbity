@@ -1,5 +1,5 @@
-use serde::{Deserialize, de::Visitor};
-
+use serde::{Deserialize, de::Visitor, Deserializer};
+use serde_json::Value as Json;
 
 #[derive(Debug, Clone, Deserialize)]
 #[serde(untagged)]
@@ -55,7 +55,13 @@ impl std::fmt::Display for Path {
 }
 
 #[derive(Debug, Deserialize)]
-pub struct PathWithPriotiy(pub Path, pub PathPriority);
+pub struct PathWithCommands(
+    pub Path,
+    #[serde(deserialize_with = "deserialize_path_priority")]
+    pub PathPriority,
+    #[serde(deserialize_with = "deserialize_path_action")]
+    pub PathAction
+);
 
 #[derive(Debug)]
 pub enum PathPriority {
@@ -65,33 +71,54 @@ pub enum PathPriority {
     Optional,
 }
 
-struct PathPriorityVisitor;
-
-impl<'de> Visitor<'de> for PathPriorityVisitor {
-    type Value = PathPriority;
-
-    fn expecting(&self, formatter: &mut std::fmt::Formatter) -> std::fmt::Result {
-        formatter.write_str("bool")
-    }
-    
-    fn visit_bool<E>(self, v: bool) -> std::result::Result<Self::Value, E>
-    where
-        E: serde::de::Error,
-    {
-        if v {
-            Ok(PathPriority::Requried)
-        } else {
-            Ok(PathPriority::Optional)
-        }
-    }
+#[derive(Debug)]
+pub enum PathAction {
+    /// Just return the thing
+    None,
+    /// Iterate it if possible
+    Iterate,
 }
 
-impl<'de> Deserialize<'de> for PathPriority {
-    fn deserialize<D>(deserializer: D) -> std::result::Result<Self, D::Error>
-    where
-        D: serde::Deserializer<'de>
-    {
-        deserializer.deserialize_bool(PathPriorityVisitor)
+fn deserialize_as_bool<'de, D>(de: D) -> Result<bool, D::Error>
+where D: Deserializer<'de> {
+    struct BoolVisitor;
+    impl<'de> Visitor<'de> for BoolVisitor {
+        type Value = bool;
+
+        fn expecting(&self, formatter: &mut std::fmt::Formatter) -> std::fmt::Result {
+            formatter.write_str("bool")
+        }
+        
+        fn visit_bool<E>(self, v: bool) -> Result<Self::Value, E>
+        where
+            E: serde::de::Error,
+        {
+            Ok(v)
+        }
     }
+    
+    de.deserialize_bool(BoolVisitor)
+}
+
+fn deserialize_path_priority<'de, D>(de: D) -> Result<PathPriority, D::Error>
+where D: Deserializer<'de>
+{
+    let v = deserialize_as_bool(de)?;
+    Ok(if v {
+        PathPriority::Requried
+    } else {
+        PathPriority::Optional
+    })
+}
+
+fn deserialize_path_action<'de, D>(de: D) -> Result<PathAction, D::Error>
+where D: Deserializer<'de>
+{
+    let v = deserialize_as_bool(de)?;
+    Ok(if v {
+        PathAction::None
+    } else {
+        PathAction::Iterate
+    })
 }
 

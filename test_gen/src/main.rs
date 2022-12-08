@@ -7,7 +7,7 @@ use std::result::Result as StdResult;
 
 use crate::prelude::*;
 use crate::cfg::Cfg;
-use crate::path::{Path, Key, PathWithPriotiy, PathPriority};
+use crate::path::{Path, Key, PathWithCommands, PathPriority};
 
 mod path;
 
@@ -108,7 +108,7 @@ impl<'a> Content<'a> {
     
     /// Recurisve paths on possible paths to iterate on
     /// None when the content is not [`Content::Array`] or [`Content::Object`]
-    pub fn iter_paths(&'a self, paths: &'a [PathWithPriotiy]) -> Option<ContentRecursiveIter<'a>> {
+    pub fn iter_paths(&'a self, paths: &'a [PathWithCommands]) -> Option<ContentRecursiveIter<'a>> {
         let mut iter_vec = Vec::with_capacity(paths.len());
         iter_vec.push(self.iter()?);
         Some(ContentRecursiveIter {
@@ -152,19 +152,23 @@ enum ContentIterError {
 struct ContentRecursiveIter<'a> {
     top_content: Content<'a>,
     curr_content: Content<'a>,
-    possible_paths: &'a [PathWithPriotiy],
+    possible_paths: &'a [PathWithCommands],
     iter_stack: Vec<ArrayObjectIter<'a>>,
 }
 
 impl<'a> ContentRecursiveIter<'a> {
     #[inline]
-    fn curr_iter(&'a mut self) -> Option<&'a mut ArrayObjectIter<'a>> {
+    fn curr_iter(&mut self) -> Option<&mut ArrayObjectIter<'a>> {
         self.iter_stack.last_mut()
     }
     
-    fn curr_path(&self) -> Option<&PathWithPriotiy> {
+    fn curr_path(&self) -> Option<&PathWithCommands> {
         let last_idx = self.iter_stack.len().checked_sub(1)?;
         self.possible_paths.get(last_idx)
+    }
+    
+    fn add_stack(&mut self, this: ArrayObjectIter<'a>) {
+        self.iter_stack.push(this);
     }
     
     #[inline]
@@ -173,14 +177,13 @@ impl<'a> ContentRecursiveIter<'a> {
     }
     
     #[inline]
-    fn curr_iter_next(&'a mut self) -> Option<StdResult<Content<'a>, ContentIterError>> {
-        let next_v = self.curr_iter()?.next()
-            .map(|j| Ok(j.into()));
+    fn curr_iter_next(&mut self) -> Option<Content<'a>> {
+        let next_v = self.curr_iter()?.next();
         if next_v.is_none() {
             self.remove_curr_iter();
             return None
         }
-        next_v
+        next_v.map(|j| j.into())
     }
     
     #[inline]
@@ -199,23 +202,44 @@ impl<'a> Iterator for ContentRecursiveIter<'a> {
             return None
         }
         
-        let resulting_content = match self.curr_path() {
-            Some(PathWithPriotiy(path, priority)) => {
-                let next_content = self.curr_content.to(path);
-                match next_content {
-                    Some(next_content) => Some(Ok(next_content)),
+        match self.curr_path() {
+            Some(PathWithCommands(path, priority, action)) => {
+                let next_content = match self.curr_iter_next() {
+                    Some(c) => c,
+                    None => match self.next() {
+                        Some(Ok(c)) => c,
+                        o => return o,
+                    },
+                };
+                let next_content = match next_content.to(path) {
+                    Some(n) => n,
                     None => match priority {
                         PathPriority::Requried => Some(Err(ContentIterError::PathRequiredButNotFound(path.clone()))),
-                        PathPriority::Optional => self.curr_iter_next(),
-                    },
-                }
+                        PathPriority::Optional => todo!(),
+                    }
+                };
             },
-            None => self.curr_iter_next()
-        };
-        if let Some(Ok(c)) = resulting_content {
-            self.curr_content = c;
+            None => todo!(),
         }
-        resulting_content
+        
+        // let resulting_content = match self.curr_path() {
+        //     Some(PathWithCommands(path, priority, action)) => {
+        //         let next_content = self.curr_content.to(path);
+        //         match next_content {
+        //             Some(next_content) => Some(Ok(next_content)),
+        //             None => match priority {
+        //                 PathPriority::Requried => Some(Err(ContentIterError::PathRequiredButNotFound(path.clone()))),
+        //                 PathPriority::Optional => self.curr_iter_next(),
+        //             },
+        //         }
+        //     },
+        //     None => self.curr_iter_next()
+        // };
+        // if let Some(Ok(c)) = resulting_content {
+        //     self.curr_content = c;
+        // }
+        // resulting_content
+        todo!()
     }
 }
 

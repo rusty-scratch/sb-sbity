@@ -1,5 +1,5 @@
 use serde::Deserialize;
-use crate::PathWithPriotiy;
+use crate::PathWithCommands;
 
 #[derive(Debug, Deserialize)]
 pub struct Cfg {
@@ -7,5 +7,5 @@ pub struct Cfg {
     pub func_prefix: String,
     /// Path to array/object recursively where its content will be generate for test.
     /// (it's hard to explain)
-    pub path_to_content: Vec<PathWithPriotiy>,
+    pub path_to_content: Vec<PathWithCommands>,
 }
