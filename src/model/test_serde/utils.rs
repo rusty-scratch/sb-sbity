@@ -1,13 +1,13 @@
 use super::*;
 
-test_json!{
+test_json! {
     ConstBool<true> {
-        const_bool_true => r"true"
+        const_bool_true => r#"true"#
     }
     ConstBool<false> {
-        const_bool_false => r"false"
+        const_bool_false => r#"false"#
     }
     ConstStr_mutation {
-        const_str_mutation => r"mutation"
+        const_str_mutation => r#""mutation""# // do not forgot the json string quote
     }
 }

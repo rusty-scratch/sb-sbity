@@ -1,0 +1,65 @@
+{
+  ")S,=Y?)(~sp|Y[MvV6NI": {
+    "opcode": "control_stop",
+    "next": null,
+    "parent": null,
+    "inputs": {},
+    "fields": {
+      "STOP_OPTION": [
+        "all",
+        null
+      ]
+    },
+    "shadow": false,
+    "topLevel": true,
+    "x": 453,
+    "y": 542,
+    "mutation": {
+      "tagName": "mutation",
+      "children": [],
+      "hasnext": "false"
+    }
+  },
+  "hR|-LIoV7b^NGU.s:J?L": {
+    "opcode": "control_stop",
+    "next": null,
+    "parent": null,
+    "inputs": {},
+    "fields": {
+      "STOP_OPTION": [
+        "this script",
+        null
+      ]
+    },
+    "shadow": false,
+    "topLevel": true,
+    "x": 440,
+    "y": 645,
+    "mutation": {
+      "tagName": "mutation",
+      "children": [],
+      "hasnext": "false"
+    }
+  },
+  "7P=sS2[udBhr;J1)T;e~": {
+    "opcode": "control_stop",
+    "next": null,
+    "parent": null,
+    "inputs": {},
+    "fields": {
+      "STOP_OPTION": [
+        "other scripts in sprite",
+        null
+      ]
+    },
+    "shadow": false,
+    "topLevel": true,
+    "x": 425,
+    "y": 769,
+    "mutation": {
+      "tagName": "mutation",
+      "children": [],
+      "hasnext": "true"
+    }
+  }
+}

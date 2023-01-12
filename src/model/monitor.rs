@@ -141,8 +141,8 @@ impl<'de> Visitor<'de> for ParameterVisitor {
     }
 
     fn visit_map<A>(self, mut map: A) -> Result<Self::Value, A::Error>
-        where
-            A: serde::de::MapAccess<'de>,
+    where
+        A: serde::de::MapAccess<'de>,
     {
         use serde::de::Error;
         if let Some((k, v)) = map.next_entry::<&str, &str>()? {
@@ -151,10 +151,12 @@ impl<'de> Visitor<'de> for ParameterVisitor {
                 ("LIST", v) => Parameter::List(v.into()),
                 ("NUMBER_NAME", "name") => Parameter::NumberName(NumberName::Name),
                 ("NUMBER_NAME", "number") => Parameter::NumberName(NumberName::Number),
-                (k, _) => return Err(A::Error::invalid_value(
-                    serde::de::Unexpected::Str(k),
-                    &"Expected either VARIABLE, LIST, or NUMBER_NAME"
-                ))
+                (k, _) => {
+                    return Err(A::Error::invalid_value(
+                        serde::de::Unexpected::Str(k),
+                        &"Expected either VARIABLE, LIST, or NUMBER_NAME",
+                    ))
+                }
             })
         } else {
             Ok(Parameter::None)
@@ -165,7 +167,7 @@ impl<'de> Visitor<'de> for ParameterVisitor {
 impl<'de> Deserialize<'de> for Parameter {
     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
     where
-        D: serde::Deserializer<'de>
+        D: serde::Deserializer<'de>,
     {
         deserializer.deserialize_map(ParameterVisitor)
     }
@@ -174,7 +176,7 @@ impl<'de> Deserialize<'de> for Parameter {
 impl Serialize for Parameter {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
-        S: serde::Serializer
+        S: serde::Serializer,
     {
         match self {
             Parameter::None => serializer.serialize_map(Some(0))?.end(),
@@ -184,7 +186,7 @@ impl Serialize for Parameter {
                     Parameter::Variable(n) => s.serialize_entry("VARIABLE", n)?,
                     Parameter::List(n) => s.serialize_entry("LIST", n)?,
                     Parameter::NumberName(n) => s.serialize_entry("NUMBER_NAME", n)?,
-                    Parameter::None => unreachable!("There cannot be none in here")
+                    Parameter::None => unreachable!("There cannot be none in here"),
                 };
                 s.end()
             }

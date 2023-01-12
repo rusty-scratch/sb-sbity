@@ -5,28 +5,35 @@ use super::*;
 
 // monitor_default_vars(Vec<Monitor>):
 //     &from_file("src/test_json/monitor_default_vars_testcase.json");
-test_json!{
+
+test_json! {
+    // dont forgot the quote
+    // i took whole fucking day to fix the string parse
+    // 1 day for 1 stupid fucking bug
+    // it's not even production bug, it's just a test bug
+    // the time i waste just aint it man
+
     Mode {
-        monitor_mode_default => "default",
-        monitor_mode_large   => "large",
-        monitor_mode_slider  => "slider",
-        monitor_mode_list    => "list"
+        monitor_mode_default => r#""default""#,
+        monitor_mode_large   => r#""large""#,
+        monitor_mode_slider  => r#""slider""#,
+        monitor_mode_list    => r#""list""#
     }
-    
+
     MonitorOpCode {
-        monitor_opcode_data_variable            => "data_variable",
-        monitor_opcode_data_listcontents        => "data_listcontents",
-        monitor_opcode_motion_xposition         => "motion_xposition",
-        monitor_opcode_motion_yposition         => "motion_yposition",
-        monitor_opcode_motion_direction         => "motion_direction",
-        monitor_opcode_looks_costumenumbername  => "looks_costumenumbername",
-        monitor_opcode_looks_backdropnumbername => "looks_backdropnumbername",
-        monitor_opcode_looks_size               => "looks_size",
-        monitor_opcode_sensing_loudness         => "sensing_loudness",
-        monitor_opcode_sensing_timer            => "sensing_timer",
-        monitor_opcode_sensing_username         => "sensing_username"
+        monitor_opcode_data_variable            => r#""data_variable""#,
+        monitor_opcode_data_listcontents        => r#""data_listcontents""#,
+        monitor_opcode_motion_xposition         => r#""motion_xposition""#,
+        monitor_opcode_motion_yposition         => r#""motion_yposition""#,
+        monitor_opcode_motion_direction         => r#""motion_direction""#,
+        monitor_opcode_looks_costumenumbername  => r#""looks_costumenumbername""#,
+        monitor_opcode_looks_backdropnumbername => r#""looks_backdropnumbername""#,
+        monitor_opcode_looks_size               => r#""looks_size""#,
+        monitor_opcode_sensing_loudness         => r#""sensing_loudness""#,
+        monitor_opcode_sensing_timer            => r#""sensing_timer""#,
+        monitor_opcode_sensing_username         => r#""sensing_username""#
     }
-    
+
     Monitor {
         monitor_slider_local_int =>
             r##"{
@@ -45,7 +52,7 @@ test_json!{
                 "sliderMax":100,
                 "isDiscrete":true
             }"##,
-    
+
         monitor_large_local_float =>
             r#"{
                 "id":"^fJ8}DC5@}XKqsTJ,*Ct",
@@ -63,7 +70,7 @@ test_json!{
                 "sliderMax":100,
                 "isDiscrete":true
             }"#,
-    
+
         monitor_local_float_int =>
             r#"{
                 "id":"mP%]jA?,6zw7QtQAZ|*8",
@@ -81,7 +88,7 @@ test_json!{
                 "sliderMax":100,
                 "isDiscrete":false
             }"#,
-    
+
         monitor_local_str =>
             r#"{
                 "id":"xD#(GuL@+XHK0=OXG,Yt",
@@ -99,7 +106,7 @@ test_json!{
                 "sliderMax":100,
                 "isDiscrete":true
             }"#,
-    
+
         monitor_global_int =>
             r#"{
                 "id":"XS@{/ji:?7$cj0_|$t|s",
@@ -117,7 +124,7 @@ test_json!{
                 "sliderMax":100,
                 "isDiscrete":true
             }"#,
-    
+
         monitor_local_list =>
             r#"{
                 "id":"%%~iKGUwz^/@M8d[6ERY",
@@ -136,7 +143,7 @@ test_json!{
                 "y":86,
                 "visible":false
             }"#,
-    
+
         monitor_global_list =>
             r#"{
                 "id":"C:iLcT6auGWSFFs={#Bt",

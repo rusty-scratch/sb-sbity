@@ -1,52 +1,34 @@
 use std::fmt::Debug;
 
 use crate::model::prelude::*;
-use crate::utils::{
-    ConstBool,
-    ConstStr_mutation,
-};
 use crate::model::{
-    string_hashmap::StringHashMap,
-    target::{
-        Meta,
-        Project,
-        RotationStyle,
-        Sprite,
-        SpriteOrStage,
-        Stage,
-        VideoState,
-    },
+    asset::{Costume, Sound},
+    monitor::{ListOrValue, Mode, Monitor, MonitorOpCode, NumberName, Parameter, Slider},
     name::Name,
     opcode::OpCode,
-    value::{
-        Float, Id, Int,
-        Value, Text, Number,
-    },
-    asset::{Costume, Sound},
-    monitor::{
-        Monitor, Mode, MonitorOpCode,
-        NumberName, Parameter, Slider, ListOrValue
-    },
     script_object::{
-        Broadcast, Comment,
-        List, Variable,
         block::{
-            Block,
-            BlockField,
-            BlockInput,
-            BlockInputValue,
-            BlockMutation,
-            BlockMutationEnum,
+            Block, BlockField, BlockInput, BlockInputValue, BlockMutation, BlockMutationEnum,
             ShadowInputType,
         },
-    }
+        Broadcast, Comment, List, Variable,
+    },
+    string_hashmap::StringHashMap,
+    target::{Meta, Project, RotationStyle, Sprite, SpriteOrStage, Stage, VideoState},
+    value::{Float, Id, Int, Number, Text, Value},
 };
+use crate::utils::{ConstBool, ConstStr_mutation};
 
-fn json_equal<T>(v_json: &str)
-where T: DeserializeOwned + Serialize + PartialEq + Debug
+fn json_str_equal<T>(v_json: &str)
+where
+    T: DeserializeOwned + Serialize + PartialEq + Debug,
 {
-    let v = serde_json::from_str::<T>(v_json).unwrap();
-    let v_json_after = serde_json::to_string(&v).unwrap();
+    let v = serde_json::from_str::<T>(v_json)
+        .map_err(|e| panic!("{e}"))
+        .unwrap();
+    let v_json_after = serde_json::to_string(&v)
+        .map_err(|e| panic!("{e}"))
+        .unwrap();
     let v_after = serde_json::from_str::<T>(&v_json_after).unwrap();
 
     assert_eq!(v, v_after, "Assert type consistency");
@@ -54,7 +36,23 @@ where T: DeserializeOwned + Serialize + PartialEq + Debug
         serde_json::from_str::<Json>(v_json).unwrap(),
         serde_json::from_str::<Json>(&v_json_after).unwrap(),
         "Assert json consistency"
-)
+    )
+}
+
+fn json_equal<T>(v_json: Json)
+where
+    T: DeserializeOwned + Serialize + PartialEq + Debug,
+{
+    let v = serde_json::from_value::<T>(v_json.clone()).unwrap();
+    let v_json_after = serde_json::to_string(&v).unwrap();
+    let v_after = serde_json::from_str::<T>(&v_json_after).unwrap();
+
+    assert_eq!(v, v_after, "Assert type consistency");
+    assert_eq!(
+        v_json,
+        serde_json::from_str::<Json>(&v_json_after).unwrap(),
+        "Assert json consistency"
+    )
 }
 
 macro_rules! test_json {
@@ -64,7 +62,7 @@ macro_rules! test_json {
             $(
                 #[test]
                 fn $fname() {
-                    json_equal::<$type>($json)
+                    json_str_equal::<$type>($json)
                 }
             )*
         )*
@@ -75,16 +73,24 @@ fn from_file<P: AsRef<std::path::Path>>(p: P) -> String {
     std::fs::read_to_string(p).unwrap()
 }
 
-#[cfg(test)] mod hashmap;
-#[cfg(test)] mod utils;
-#[cfg(test)] mod id;
-#[cfg(test)] mod values;
-#[cfg(test)] mod monitor;
-#[cfg(test)] mod asset;
-#[cfg(test)] mod script_data;
-#[cfg(test)] mod block;
+#[cfg(test)]
+mod asset;
+#[cfg(test)]
+mod block;
+#[cfg(test)]
+mod hashmap;
+#[cfg(test)]
+mod id;
+#[cfg(test)]
+mod monitor;
+#[cfg(test)]
+mod script_data;
+#[cfg(test)]
+mod utils;
+#[cfg(test)]
+mod values;
 
-test_json!{
+test_json! {
     // intermediate_test(intermediate::Project):
     //     &from_file("src/test_json/intermediate_testcase.json");
 }

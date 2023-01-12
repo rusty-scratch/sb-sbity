@@ -3,12 +3,7 @@ name = "rs-sb3"
 version = "0.1.0"
 edition = "2021"
 author = ["Multirious"]
-description = "Rust crate for deserialize and serializing .sb3 format the Scratch 3 project format."
-
-[workspace]
-members = [
-  "test_gen"
-]
+description = "Rust crate for deserialize and serializing .sb3 format. (the Scratch 3 project format)"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 

@@ -8,7 +8,7 @@ use BlockMutation;
 use BlockMutationEnum;
 use ShadowInputType;
 
-test_json!{
+test_json! {
     BlockInputValue {
         block_input_value_number =>
             r#"[
@@ -60,13 +60,13 @@ test_json!{
                 90.349283473
             ]"#
     }
-    
+
     ShadowInputType {
         shadow_input_shadow => "1",
         shadow_input_no_shadow => "2",
         shadow_input_shadow_obscured => "3"
     }
-    
+
     Block {
         block1 => r#"{
             "opcode": "motion_movesteps",
@@ -113,8 +113,33 @@ test_json!{
             "topLevel": false
         }"#
     }
-    
-    BlockField {
-        
+}
+
+#[test]
+fn block_fields() {
+    const BLOCKS: &str = include_str!("test_case\\general_block_testcase.json");
+    let blocks: Json = serde_json::from_str(BLOCKS).unwrap();
+    let blocks = blocks
+        .as_object()
+        .unwrap()
+        .values()
+        .map(|v| v.as_object().unwrap());
+    let blocks_fields = blocks.map(|block| block.get("fields").unwrap()).enumerate();
+    for (i, field) in blocks_fields {
+        println!("{i}");
+        json_equal::<StringHashMap<BlockField>>(field.to_owned());
+    }
+}
+
+#[test]
+fn blocks() {
+    const BLOCKS: &str = include_str!("test_case\\general_block_testcase.json");
+    let blocks: Json = serde_json::from_str(BLOCKS).unwrap();
+    let blocks = blocks.as_object().unwrap().values();
+    let blocks = blocks.enumerate();
+    for (i, block) in blocks {
+        println!("{i}");
+        println!("{:#?}", serde_json::from_value::<Block>(block.to_owned()));
+        json_equal::<Block>(block.to_owned());
     }
 }

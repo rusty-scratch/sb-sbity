@@ -1,4 +1,0 @@
-func_prefix = "hallo"
-path_to_content = [
-  [["fields"], false]
-]

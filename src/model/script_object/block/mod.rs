@@ -37,30 +37,23 @@ pub struct Block {
     pub mutation: Option<BlockMutation>,
 
     /// X Position of the top level block.
-    #[serde(
-        skip_serializing_if = "Option::is_none",
-        default
-    )]
+    #[serde(skip_serializing_if = "Option::is_none", default)]
     pub x: Option<Number>,
 
     /// Y Position of the top level block.
-    #[serde(
-        skip_serializing_if = "Option::is_none",
-        default
-    )]
+    #[serde(skip_serializing_if = "Option::is_none", default)]
     pub y: Option<Number>,
 }
 
 /// A struct representing inputs into which other blocks may be dropped, including C mouths.
-/// 
-/// I'm still figuring this out
+/// idk if is this possible without vec
 #[derive(Debug, Clone, PartialEq)]
 pub struct BlockInput {
     /// See [`ShadowInputType`]
     pub shadow: ShadowInputType,
 
     /// Inputs
-    pub inputs: Vec<Option<IdOrValue>>
+    pub inputs: Vec<Option<IdOrValue>>,
 }
 
 impl BlockInput {
@@ -91,32 +84,28 @@ impl<'de> Visitor<'de> for BlockInputVisitor {
     }
 
     fn visit_seq<A>(self, mut seq: A) -> Result<Self::Value, A::Error>
-        where
-            A: serde::de::SeqAccess<'de>
+    where
+        A: serde::de::SeqAccess<'de>,
     {
         use serde::de::Error;
-        
-        let shadow = seq.next_element::<ShadowInputType>()?
-            .ok_or_else(|| A::Error::invalid_length(0,
-                &"Expected 2 or more elements for block input"
-            ))?;
+
+        let shadow = seq.next_element::<ShadowInputType>()?.ok_or_else(|| {
+            A::Error::invalid_length(0, &"Expected 2 or more elements for block input")
+        })?;
 
         let mut inputs = vec![];
         while let Some(v) = seq.next_element::<Option<IdOrValue>>()? {
-            inputs.push(v) 
+            inputs.push(v)
         }
 
-        Ok(BlockInput {
-            shadow,
-            inputs,
-        })
+        Ok(BlockInput { shadow, inputs })
     }
 }
 
 impl<'de> Deserialize<'de> for BlockInput {
     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
     where
-        D: Deserializer<'de>
+        D: Deserializer<'de>,
     {
         deserializer.deserialize_seq(BlockInputVisitor)
     }
@@ -125,7 +114,7 @@ impl<'de> Deserialize<'de> for BlockInput {
 impl Serialize for BlockInput {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
-        S: Serializer
+        S: Serializer,
     {
         use serde::ser::SerializeSeq;
         let mut s = serializer.serialize_seq(Some(self.size_hint()))?;
@@ -138,14 +127,14 @@ impl Serialize for BlockInput {
 }
 
 /// Shadow enum for [`BlockInput`]
-/// 
+///
 /// Shadow is area inside block input/arg/param or whatever you wanted to call it.
 /// It's consisting of:
 ///  - raw input field where you just type stuff in and optionally can put a reporter in
 ///  - menu that you can choose but cannot put a reporter in
 ///  - menu that you can chose and optionally can put a reporter in
 ///  - or others I might not catch while developing this
-/// 
+///
 /// This documentation might not be completed or is completed, idk.
 /// Scratch wiki didn't tell anything about this.
 #[derive(Debug, Clone, PartialEq, Deserialize_repr, Serialize_repr)]
@@ -169,7 +158,7 @@ pub enum BlockInputValue {
     Number {
         /// The value
         value: Value,
-    } ,
+    },
 
     /// Postive number input
     PositiveNumber {
@@ -178,7 +167,7 @@ pub enum BlockInputValue {
     },
 
     /// Postive integer input
-    PositiveInteger { 
+    PositiveInteger {
         /// The value
         value: Value,
     },
@@ -238,7 +227,7 @@ pub enum BlockInputValue {
         x: Option<Number>,
         /// Position y of the variable if top_level
         y: Option<Number>,
-    }
+    },
 }
 
 impl BlockInputValue {
@@ -254,8 +243,18 @@ impl BlockInputValue {
             Color { value: _ } => 9,
             String { value: _ } => 10,
             Broadcast { name: _, id: _ } => 11,
-            Variable { name: _, id: _, x: _, y: _ } => 12,
-            List { name: _, id: _, x: _, y: _ } => 13,
+            Variable {
+                name: _,
+                id: _,
+                x: _,
+                y: _,
+            } => 12,
+            List {
+                name: _,
+                id: _,
+                x: _,
+                y: _,
+            } => 13,
         }
     }
 
@@ -263,15 +262,20 @@ impl BlockInputValue {
         use BlockInputValue::*;
 
         match self {
-            Number          { value: _ } => 1,
-            PositiveNumber  { value: _ } => 1,
+            Number { value: _ } => 1,
+            PositiveNumber { value: _ } => 1,
             PositiveInteger { value: _ } => 1,
-            Integer         { value: _ } => 1,
-            Angle           { value: _ } => 1,
-            Color           { value: _ } => 1,
-            String          { value: _ } => 1,
-            Broadcast       { name: _, id: _ } => 2,
-            Variable        { name: _, id: _, x, y } => {
+            Integer { value: _ } => 1,
+            Angle { value: _ } => 1,
+            Color { value: _ } => 1,
+            String { value: _ } => 1,
+            Broadcast { name: _, id: _ } => 2,
+            Variable {
+                name: _,
+                id: _,
+                x,
+                y,
+            } => {
                 let mut n = 2;
                 if x.is_some() {
                     n += 1
@@ -280,8 +284,13 @@ impl BlockInputValue {
                     n += 1
                 }
                 n
-            },
-            List            { name: _, id: _, x, y } => {
+            }
+            List {
+                name: _,
+                id: _,
+                x,
+                y,
+            } => {
                 let mut n = 2;
                 if x.is_some() {
                     n += 1
@@ -290,7 +299,7 @@ impl BlockInputValue {
                     n += 1
                 }
                 n
-            },
+            }
         }
     }
 }
@@ -305,42 +314,40 @@ impl<'de> Visitor<'de> for BlockInputValueVisitor {
     }
 
     fn visit_seq<A>(self, mut seq: A) -> Result<Self::Value, A::Error>
-        where
-            A: serde::de::SeqAccess<'de>
+    where
+        A: serde::de::SeqAccess<'de>,
     {
         use serde::de::Error;
         use BlockInputValue::{
-            Number as BlockInputNumber,
-            PositiveNumber,
-            PositiveInteger,
-            Integer,
-            Angle,
-            Color,
-            String,
-            Broadcast,
-            Variable,
-            List,
+            Angle, Broadcast, Color, Integer, List, Number as BlockInputNumber, PositiveInteger,
+            PositiveNumber, String, Variable,
         };
 
-        fn seq_next_element_error<'de, T, A>(seq: &mut A, len: usize, error: &str) -> Result<T, A::Error>
+        fn seq_next_element_error<'de, T, A>(
+            seq: &mut A,
+            len: usize,
+            error: &str,
+        ) -> Result<T, A::Error>
         where
             A: serde::de::SeqAccess<'de>,
-            T: Deserialize<'de>
+            T: Deserialize<'de>,
         {
             seq.next_element::<T>()?
                 .ok_or_else(|| A::Error::invalid_length(len, &error))
         }
 
         let vtype: u8 = seq_next_element_error(
-            &mut seq, 0,
-            "Expecting 2 or more elements for block input value with any Id"
+            &mut seq,
+            0,
+            "Expecting 2 or more elements for block input value with any Id",
         )?;
-        
+
         let value = seq_next_element_error(
-            &mut seq, 1,
-            "Expecting 2 or more elements for block input value with any Id"
+            &mut seq,
+            1,
+            "Expecting 2 or more elements for block input value with any Id",
         )?;
-        
+
         let res = match vtype {
             4 => BlockInputNumber { value },
             5 => PositiveNumber { value },
@@ -351,22 +358,26 @@ impl<'de> Visitor<'de> for BlockInputValueVisitor {
             10 => String { value },
             11 => {
                 let id = seq_next_element_error(
-                    &mut seq, 3,
-                    "Expecting 3 or more elements for block input value with Id 11"
+                    &mut seq,
+                    3,
+                    "Expecting 3 or more elements for block input value with Id 11",
                 )?;
 
                 let name = match value {
                     Value::Text(s) => s,
-                    Value::Number(_) => return Err(
-                        A::Error::invalid_value(
+                    Value::Number(_) => {
+                        return Err(A::Error::invalid_value(
                             serde::de::Unexpected::Other("number"),
-                            &"a string"
-                        )
-                    ),
+                            &"a string",
+                        ))
+                    }
                 };
 
-                Broadcast { name: Name(name), id }
-            },
+                Broadcast {
+                    name: Name(name),
+                    id,
+                }
+            }
             12 => {
                 let id = seq_next_element_error(
                     &mut seq, 3,
@@ -376,15 +387,20 @@ impl<'de> Visitor<'de> for BlockInputValueVisitor {
                 let y = seq.next_element::<Number>()?;
                 let name = match value {
                     Value::Text(s) => s,
-                    Value::Number(_) => return Err(
-                        A::Error::invalid_value(
+                    Value::Number(_) => {
+                        return Err(A::Error::invalid_value(
                             serde::de::Unexpected::Other("number"),
-                            &"a string"
-                        )
-                    ),
+                            &"a string",
+                        ))
+                    }
                 };
-                Variable { name: Name(name), id, x, y }
-            },
+                Variable {
+                    name: Name(name),
+                    id,
+                    x,
+                    y,
+                }
+            }
             13 => {
                 let id = seq_next_element_error(
                     &mut seq, 3,
@@ -394,19 +410,26 @@ impl<'de> Visitor<'de> for BlockInputValueVisitor {
                 let y = seq.next_element::<Number>()?;
                 let name = match value {
                     Value::Text(s) => s,
-                    Value::Number(_) => return Err(
-                        A::Error::invalid_value(
+                    Value::Number(_) => {
+                        return Err(A::Error::invalid_value(
                             serde::de::Unexpected::Other("number"),
-                            &"a string"
-                        )
-                    ),
+                            &"a string",
+                        ))
+                    }
                 };
-                List { name: Name(name), id, x, y }
-            },
-            v => return Err(A::Error::invalid_value(
-                serde::de::Unexpected::Unsigned(v.into()),
-                &"Expecting a type id between 4 - 13 inclusive"
-            ))
+                List {
+                    name: Name(name),
+                    id,
+                    x,
+                    y,
+                }
+            }
+            v => {
+                return Err(A::Error::invalid_value(
+                    serde::de::Unexpected::Unsigned(v.into()),
+                    &"Expecting a type id between 4 - 13 inclusive",
+                ))
+            }
         };
 
         Ok(res)
@@ -416,7 +439,7 @@ impl<'de> Visitor<'de> for BlockInputValueVisitor {
 impl<'de> Deserialize<'de> for BlockInputValue {
     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
     where
-        D: Deserializer<'de>
+        D: Deserializer<'de>,
     {
         deserializer.deserialize_seq(BlockInputValueVisitor)
     }
@@ -425,29 +448,28 @@ impl<'de> Deserialize<'de> for BlockInputValue {
 impl Serialize for BlockInputValue {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
-        S: Serializer
+        S: Serializer,
     {
-        use BlockInputValue::*;
         use serde::ser::SerializeSeq;
+        use BlockInputValue::*;
 
         let mut s = serializer.serialize_seq(Some(self.hint_size()))?;
         s.serialize_element(&self.get_id())?;
         match self {
-            Number { value } |
-            PositiveNumber { value } |
-            PositiveInteger { value } |
-            Integer { value } |
-            Angle { value } |
-            Color { value } |
-            String { value } => {
+            Number { value }
+            | PositiveNumber { value }
+            | PositiveInteger { value }
+            | Integer { value }
+            | Angle { value }
+            | Color { value }
+            | String { value } => {
                 s.serialize_element(value)?;
-            },
+            }
             Broadcast { name, id } => {
                 s.serialize_element(name)?;
                 s.serialize_element(id)?;
-            },
-            Variable { name, id, x, y } |
-            List { name, id, x, y } => {
+            }
+            Variable { name, id, x, y } | List { name, id, x, y } => {
                 s.serialize_element(name)?;
                 s.serialize_element(id)?;
                 if let Some(x) = x {
@@ -456,7 +478,7 @@ impl Serialize for BlockInputValue {
                 if let Some(y) = y {
                     s.serialize_element(y)?;
                 }
-            },
+            }
         }
         s.end()
     }
@@ -479,7 +501,7 @@ pub enum BlockField {
     NoId {
         /// Value of the field
         value: Value,
-    }
+    },
 }
 
 impl BlockField {
@@ -514,15 +536,14 @@ impl<'de> Visitor<'de> for BlockFieldVisitor {
     }
 
     fn visit_seq<A>(self, mut seq: A) -> Result<Self::Value, A::Error>
-        where
-            A: serde::de::SeqAccess<'de>
+    where
+        A: serde::de::SeqAccess<'de>,
     {
         use serde::de::Error;
 
-        let value = seq.next_element::<Value>()?
-            .ok_or_else(|| A::Error::invalid_length(1,
-                &"length 1 or 2 for BlockField"
-            ))?;
+        let value = seq
+            .next_element::<Value>()?
+            .ok_or_else(|| A::Error::invalid_length(1, &"length 1 or 2 for BlockField"))?;
         let id = seq.next_element::<Option<Id>>()?;
 
         Ok(match id {
@@ -535,7 +556,7 @@ impl<'de> Visitor<'de> for BlockFieldVisitor {
 impl<'de> Deserialize<'de> for BlockField {
     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
     where
-        D: Deserializer<'de>
+        D: Deserializer<'de>,
     {
         deserializer.deserialize_seq(BlockFieldVisitor)
     }
@@ -544,22 +565,22 @@ impl<'de> Deserialize<'de> for BlockField {
 impl Serialize for BlockField {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
-        S: Serializer
+        S: Serializer,
     {
         use serde::ser::SerializeSeq;
-        
+
         match self {
             BlockField::WithId { value, id } => {
                 let mut seq = serializer.serialize_seq(Some(2))?;
                 seq.serialize_element(value)?;
                 seq.serialize_element(id)?;
                 seq.end()
-            },
+            }
             BlockField::NoId { value } => {
                 let mut seq = serializer.serialize_seq(Some(1))?;
                 seq.serialize_element(value)?;
                 seq.end()
-            },
+            }
         }
     }
 }
@@ -592,14 +613,14 @@ pub enum BlockMutationEnum {
         /// An array of the ids of the arguments; these can also be found in the input property of the main block.
         #[serde(
             deserialize_with = "deserialize_json_str",
-            serialize_with = "serialize_json_str",
+            serialize_with = "serialize_json_str"
         )]
         argumentids: Vec<Id>,
 
         /// An array of the names of the arguments.
         #[serde(
             deserialize_with = "deserialize_json_str",
-            serialize_with = "serialize_json_str",
+            serialize_with = "serialize_json_str"
         )]
         argumentnames: Vec<Name>,
 
@@ -608,14 +629,14 @@ pub enum BlockMutationEnum {
         ///  - bool default is `false`
         #[serde(
             deserialize_with = "deserialize_json_str",
-            serialize_with = "serialize_json_str",
+            serialize_with = "serialize_json_str"
         )]
         argumentdefaults: Vec<Value>,
-        
+
         /// Whether to run the block without screen refresh or not.
         #[serde(
             deserialize_with = "deserialize_json_str",
-            serialize_with = "serialize_json_str",
+            serialize_with = "serialize_json_str"
         )]
         warp: Option<bool>,
     },
@@ -631,11 +652,11 @@ pub enum BlockMutationEnum {
             serialize_with = "serialize_json_str"
         )]
         argumentids: Vec<Id>,
-        
+
         /// Whether to run the block without screen refresh or not.
         #[serde(
             deserialize_with = "deserialize_json_str",
-            serialize_with = "serialize_json_str",
+            serialize_with = "serialize_json_str"
         )]
         warp: Option<bool>,
     },
@@ -647,36 +668,35 @@ pub enum BlockMutationEnum {
         ///  - true for stop other scripts in sprite)
         #[serde(
             deserialize_with = "deserialize_json_str",
-            serialize_with = "serialize_json_str",
+            serialize_with = "serialize_json_str"
         )]
         hasnext: bool,
-    }
+    },
 }
 
 fn deserialize_json_str<'de, D, T>(de: D) -> Result<T, D::Error>
 where
     D: Deserializer<'de>,
-    T: DeserializeOwned
+    T: DeserializeOwned,
 {
     use serde::de::Error;
 
     let v = Json::deserialize(de)?;
-    let s = v.as_str()
-        .ok_or_else(|| D::Error::invalid_value(
+    let s = v.as_str().ok_or_else(|| {
+        D::Error::invalid_value(
             serde::de::Unexpected::Other(&v.to_string()),
-            &"A str of json"
-        ))?;
-    let v = serde_json::from_str::<T>(s)
-        .map_err(|e| D::Error::custom(e))?;
-    
+            &"A str of json",
+        )
+    })?;
+    let v = serde_json::from_str::<T>(s).map_err(|e| D::Error::custom(e))?;
+
     Ok(v)
 }
 
 fn serialize_json_str<S, T>(s: &T, ser: S) -> Result<S::Ok, S::Error>
 where
     S: Serializer,
-    T: Serialize
+    T: Serialize,
 {
     ser.serialize_str(&serde_json::to_string(s).unwrap())
 }
-

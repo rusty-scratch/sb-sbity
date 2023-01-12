@@ -1,0 +1,116 @@
+[
+    {
+        "tagName": "mutation",
+        "children": [],
+        "proccode": "diamond",
+        "argumentids": "[]",
+        "argumentnames": "[]",
+        "argumentdefaults": "[]",
+        "warp": "true"
+    },
+    {
+        "tagName": "mutation",
+        "children": [],
+        "proccode": "outer circle",
+        "argumentids": "[]",
+        "argumentnames": "[]",
+        "argumentdefaults": "[]",
+        "warp": "true"
+    },
+    {
+        "tagName": "mutation",
+        "children": [],
+        "proccode": "circle",
+        "argumentids": "[]",
+        "argumentnames": "[]",
+        "argumentdefaults": "[]",
+        "warp": "true"
+    },
+    {
+        "tagName": "mutation",
+        "children": [],
+        "proccode": "bg",
+        "argumentids": "[]",
+        "argumentnames": "[]",
+        "argumentdefaults": "[]",
+        "warp": "true"
+    },
+    {
+        "tagName": "mutation",
+        "children": [],
+        "hasnext": "false"
+    },
+    {
+        "tagName": "mutation",
+        "children": [],
+        "proccode": "bg",
+        "argumentids": "[]",
+        "warp": "true"
+    },
+    {
+        "tagName": "mutation",
+        "children": [],
+        "proccode": "diamond",
+        "argumentids": "[]",
+        "warp": "true"
+    },
+    {
+        "tagName": "mutation",
+        "children": [],
+        "proccode": "outer circle",
+        "argumentids": "[]",
+        "warp": "true"
+    },
+    {
+        "tagName": "mutation",
+        "children": [],
+        "proccode": "circle",
+        "argumentids": "[]",
+        "warp": "true"
+    },{
+        "tagName": "mutation",
+        "children": [],
+        "proccode": "bg",
+        "argumentids": "[]",
+        "warp": "true"
+    },
+    {
+        "tagName": "mutation",
+        "children": [],
+        "proccode": "print %n",
+        "argumentids": "[\"input0\"]",
+        "warp": "null"
+    },
+    {
+        "tagName": "mutation",
+        "children": [],
+        "proccode": "print %n",
+        "argumentids": "[\"input0\"]",
+        "argumentnames": "[\"number\"]",
+        "argumentdefaults": "[1]",
+        "warp": "true"
+    },
+    {
+        "tagName": "mutation",
+        "children": [],
+        "proccode": "print2 %s",
+        "argumentids": "[\"K=2).tXE,@k79(/~J+62\"]",
+        "argumentnames": "[\"number\"]",
+        "argumentdefaults": "[\"\"]",
+        "warp": "true"
+    },
+    {
+        "tagName": "mutation",
+        "children": [],
+        "proccode": "print2 %s",
+        "argumentids": "[\"K=2).tXE,@k79(/~J+62\"]",
+        "warp": "true"
+    },
+    {
+        "tagName": "mutation",
+        "children": [],
+        "proccode": "print %n",
+        "argumentids": "[\"input0\"]",
+        "warp": "true"
+    }
+]

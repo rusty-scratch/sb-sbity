@@ -1,13 +1,7 @@
-use crate::model::prelude::*;
-use crate::model::string_hashmap::StringHashMap;
-use crate::model::script_object::{
-    Broadcast,
-    Comment,
-    List,
-    Variable,
-    block::Block,
-};
 use crate::model::asset::{Costume, Sound};
+use crate::model::prelude::*;
+use crate::model::script_object::{block::Block, Broadcast, Comment, List, Variable};
+use crate::model::string_hashmap::StringHashMap;
 
 #[derive(Debug, PartialEq, Deserialize, Serialize)]
 pub struct Project {
@@ -43,18 +37,18 @@ pub struct Target {
     /// the second is the value and the third is `true` if the variable is a cloud variable,
     /// or otherwise not present.
     variables: StringHashMap<Variable>,
-    
+
     /// An object associating IDs with arrays representing lists.
     /// The first element of the array is the list name and the second is the list as an array.
     lists: StringHashMap<List>,
-    
+
     /// An object associating IDs with broadcast names.
     /// Normally only present in the stage.
     broadcasts: StringHashMap<Broadcast>,
-    
+
     /// An object associating IDs with blocks.
     blocks: StringHashMap<Block>,
-    
+
     /// An object associating IDs with comments.
     comments: StringHashMap<Comment>,
 
@@ -87,12 +81,12 @@ pub struct Stage {
 
     /// See [`VideoState`]
     pub video_state: VideoState,
-    
+
     /// The video transparency.
     /// Defaults to 50. Has no effect if video_stage is "off"
     /// or if the project does not use an extension with video input.
     pub video_transparency: Number,
-    
+
     /// The language of the Text to Speech extension. Defaults to the editor language.
     // TODO: Create TextToSpeechLangage struct
     pub text_to_speech_language: Option<Json>,
@@ -171,7 +165,7 @@ pub enum RotationStyle {
     LeftRight,
 
     /// Don't rotate
-    /// 
+    ///
     /// Note: The sprite's visual direction will not change,
     ///       but the direction it moves with the Move () Steps block can still be modified.
     #[serde(rename = "don't rotate")]
