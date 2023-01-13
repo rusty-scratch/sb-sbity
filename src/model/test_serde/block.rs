@@ -117,8 +117,8 @@ test_json! {
 
 #[test]
 fn block_fields() {
-    const BLOCKS: &str = include_str!("test_case\\general_block_testcase.json");
-    let blocks: Json = serde_json::from_str(BLOCKS).unwrap();
+    let blocks: &str = include_str!("test_case\\general_block_testcase.json");
+    let blocks: Json = serde_json::from_str(blocks).unwrap();
     let blocks = blocks
         .as_object()
         .unwrap()
@@ -133,8 +133,8 @@ fn block_fields() {
 
 #[test]
 fn blocks() {
-    const BLOCKS: &str = include_str!("test_case\\general_block_testcase.json");
-    let blocks: Json = serde_json::from_str(BLOCKS).unwrap();
+    let blocks: &str = include_str!("test_case\\general_block_testcase.json");
+    let blocks: Json = serde_json::from_str(blocks).unwrap();
     let blocks = blocks.as_object().unwrap().values();
     let blocks = blocks.enumerate();
     for (i, block) in blocks {

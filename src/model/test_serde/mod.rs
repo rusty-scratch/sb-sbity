@@ -84,11 +84,13 @@ mod id;
 #[cfg(test)]
 mod monitor;
 #[cfg(test)]
+mod project;
+#[cfg(test)]
 mod script_data;
 #[cfg(test)]
 mod utils;
 #[cfg(test)]
-mod values;
+mod value;
 
 test_json! {
     // intermediate_test(intermediate::Project):

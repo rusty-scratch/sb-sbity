@@ -1,5 +1,5 @@
-use serde_tuple::{Deserialize_tuple, Serialize_tuple};
 use crate::model::prelude::*;
+use serde_tuple::{Deserialize_tuple, Serialize_tuple};
 
 pub mod block;
 
@@ -15,7 +15,7 @@ pub struct Variable {
     /// Cloud variable. Variable that is stored in the server.
     /// Can only store numbers.
     #[serde(skip_serializing_if = "utils::is_false", default)]
-    pub is_cloud_variable: bool
+    pub is_cloud_variable: bool,
 }
 
 /// List of values
@@ -33,8 +33,7 @@ pub struct List {
 #[serde(rename_all = "camelCase")]
 pub struct Comment {
     /// The ID of the block the comment is attached to.
-    #[getset(get = "pub")]
-    block_id: Option<Id>,
+    pub block_id: Option<Id>,
 
     /// The x-coordinate of the comment in the code area.
     pub x: Number,
@@ -58,7 +57,7 @@ pub struct Comment {
 /// Only contains in stage
 #[derive(Debug, Clone, Getters, PartialEq, Deserialize, Serialize)]
 #[serde(transparent)]
-pub struct Broadcast{
+pub struct Broadcast {
     /// Name of the broadcast
     pub name: Text,
 }

@@ -1,21 +1,13 @@
-use std::ops::Deref;
 use crate::model::prelude::*;
+use std::ops::Deref;
 
-#[derive(Debug,Default, Clone, Copy, PartialEq, Eq)]
-pub struct ConstBool<const VAL: bool>; 
-
-impl<const VAL: bool> Deref for ConstBool<VAL> {
-    type Target = bool;
-
-    fn deref(&self) -> &Self::Target {
-        &VAL
-    }
-}
+#[derive(Debug, Default, Clone, Copy, PartialEq, Eq)]
+pub struct ConstBool<const VAL: bool>;
 
 impl<const VAL: bool> Serialize for ConstBool<VAL> {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
-        S: serde::Serializer
+        S: serde::Serializer,
     {
         serializer.serialize_bool(VAL)
     }
@@ -24,7 +16,7 @@ impl<const VAL: bool> Serialize for ConstBool<VAL> {
 impl<'de, const VAL: bool> Deserialize<'de> for ConstBool<VAL> {
     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
     where
-        D: serde::Deserializer<'de>
+        D: serde::Deserializer<'de>,
     {
         deserializer.deserialize_bool(ConstBool)
     }
@@ -36,10 +28,10 @@ impl<'de, const VAL: bool> Visitor<'de> for ConstBool<VAL> {
     fn expecting(&self, formatter: &mut std::fmt::Formatter) -> std::fmt::Result {
         formatter.write_str("bool")
     }
-    
+
     fn visit_bool<E>(self, v: bool) -> Result<Self::Value, E>
-        where
-            E: serde::de::Error,
+    where
+        E: serde::de::Error,
     {
         if v == VAL {
             Ok(Self)
@@ -49,7 +41,9 @@ impl<'de, const VAL: bool> Visitor<'de> for ConstBool<VAL> {
     }
 }
 
-pub fn is_false(b: &bool) -> bool { !b }
+pub fn is_false(b: &bool) -> bool {
+    !b
+}
 
 /// This is only for serializing compile time constant field where the field never change.
 /// Type is `&str` and always serialize `"mutation"`
@@ -64,7 +58,7 @@ impl ConstStr_mutation {
 impl Serialize for ConstStr_mutation {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
-        S: serde::Serializer
+        S: serde::Serializer,
     {
         serializer.serialize_str(Self::VALUE)
     }
@@ -73,7 +67,7 @@ impl Serialize for ConstStr_mutation {
 impl<'de> Deserialize<'de> for ConstStr_mutation {
     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
     where
-        D: Deserializer<'de>
+        D: Deserializer<'de>,
     {
         deserializer.deserialize_str(ConstStr_mutation)
     }
@@ -85,7 +79,7 @@ impl<'de> Visitor<'de> for ConstStr_mutation {
     fn expecting(&self, formatter: &mut std::fmt::Formatter) -> std::fmt::Result {
         formatter.write_str("mutation")
     }
-    
+
     fn visit_str<E>(self, v: &str) -> Result<Self::Value, E>
     where
         E: serde::de::Error,

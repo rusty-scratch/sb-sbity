@@ -4,15 +4,18 @@ use crate::model::script_object::{block::Block, Broadcast, Comment, List, Variab
 use crate::model::string_hashmap::StringHashMap;
 
 #[derive(Debug, PartialEq, Deserialize, Serialize)]
+#[serde(rename_all = "camelCase")]
 pub struct Project {
     pub meta: Meta,
     pub extensions: Json,
     pub monitors: Json,
+    // pub targets: Json,
     pub targets: Vec<SpriteOrStage>,
 }
 
 /// About the project's author and the Scratch version used.
 #[derive(Debug, PartialEq, Clone, Deserialize, Serialize)]
+#[serde(rename_all = "camelCase")]
 pub struct Meta {
     /// Always `3.0.0`.
     pub semver: String,
@@ -36,21 +39,21 @@ pub struct Target {
     /// The first element of the array is the variable name,
     /// the second is the value and the third is `true` if the variable is a cloud variable,
     /// or otherwise not present.
-    variables: StringHashMap<Variable>,
+    pub variables: StringHashMap<Variable>,
 
     /// An object associating IDs with arrays representing lists.
     /// The first element of the array is the list name and the second is the list as an array.
-    lists: StringHashMap<List>,
+    pub lists: StringHashMap<List>,
 
     /// An object associating IDs with broadcast names.
     /// Normally only present in the stage.
-    broadcasts: StringHashMap<Broadcast>,
+    pub broadcasts: StringHashMap<Broadcast>,
 
     /// An object associating IDs with blocks.
-    blocks: StringHashMap<Block>,
+    pub blocks: StringHashMap<Block>,
 
     /// An object associating IDs with comments.
-    comments: StringHashMap<Comment>,
+    pub comments: StringHashMap<Comment>,
 
     /// The costume number.
     pub current_costume: Int,
@@ -71,6 +74,7 @@ pub struct Target {
 /// Scratch's Stage.
 /// Costume is considered backdrop.
 #[derive(Debug, PartialEq, Clone, Deserialize, Serialize)]
+#[serde(rename_all = "camelCase")]
 pub struct Stage {
     /// See [`Target`]
     #[serde(flatten)]
@@ -91,11 +95,12 @@ pub struct Stage {
     // TODO: Create TextToSpeechLangage struct
     pub text_to_speech_language: Option<Json>,
 
-    is_stage: utils::ConstBool<true>,
+    pub is_stage: utils::ConstBool<true>,
 }
 
 /// Scratch Sprite
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct Sprite {
     /// See [`Target`]
     #[serde(flatten)]
@@ -122,10 +127,10 @@ pub struct Sprite {
     /// See [`RotationStyle`]
     pub rotation_style: RotationStyle,
 
-    is_stage: utils::ConstBool<false>,
+    pub is_stage: utils::ConstBool<false>,
 }
 
-#[derive(Debug, Clone, PartialEq, Deserialize, Serialize)]
+#[derive(Debug, Clone, PartialEq, Serialize)]
 pub enum SpriteOrStage {
     Stage(Stage),
     Sprite(Sprite),
@@ -171,3 +176,84 @@ pub enum RotationStyle {
     #[serde(rename = "don't rotate")]
     DontRotate,
 }
+
+// Serde impl ==========================================================================================================
+fn json_to_unexpected(json: &Json) -> Unexpected<'_> {
+    match json {
+        Json::Null => Unexpected::Unit,
+        Json::Bool(b) => Unexpected::Bool(*b),
+        Json::Number(n) => {
+            if let Some(n) = n.as_i64() {
+                Unexpected::Signed(n)
+            } else if let Some(n) = n.as_u64() {
+                Unexpected::Unsigned(n)
+            } else if let Some(n) = n.as_f64() {
+                Unexpected::Float(n)
+            } else {
+                unreachable!()
+            }
+        }
+        Json::String(s) => Unexpected::Str(s),
+        Json::Array(_) => Unexpected::Seq,
+        Json::Object(_) => Unexpected::Map,
+    }
+}
+
+impl<'de> Deserialize<'de> for SpriteOrStage {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: Deserializer<'de>,
+    {
+        use serde::de::Error;
+        let object_j = Json::deserialize(deserializer)?;
+        let object = match &object_j {
+            Json::Object(o) => o,
+            o => {
+                return Err(<D::Error as Error>::invalid_type(
+                    json_to_unexpected(o),
+                    &"sprite or stage map, tagged with \"isStage\" key",
+                ))
+            }
+        };
+        let Some(is_stage) = object.get("isStage") else {
+            return Err(
+                <D::Error as Error>::missing_field("isStage")
+            )
+        };
+        let is_stage = match is_stage {
+            &Json::Bool(b) => b,
+            o => {
+                return Err(<D::Error as Error>::invalid_value(
+                    json_to_unexpected(o),
+                    &"\"isStage\" key must be the type `bool`",
+                ))
+            }
+        };
+        if is_stage {
+            Ok(SpriteOrStage::Stage(
+                serde_json::from_value(object_j).map_err(<D::Error as Error>::custom)?,
+            ))
+        } else {
+            Ok(SpriteOrStage::Sprite(
+                serde_json::from_value(object_j).map_err(<D::Error as Error>::custom)?,
+            ))
+        }
+    }
+}
+
+// struct SpriteOrStageVisitor;
+
+// impl<'de> Visitor<'de> for SpriteOrStageVisitor {
+//     type Value = SpriteOrStage;
+
+//     fn expecting(&self, formatter: &mut std::fmt::Formatter) -> std::fmt::Result {
+//         formatter.write_str("sprite or stage map, tagged with \"isStage\" key")
+//     }
+
+//     fn visit_map<A>(self, map: A) -> Result<Self::Value, A::Error>
+//     where
+//         A: serde::de::MapAccess<'de>,
+//     {
+//         map.try_into
+//     }
+// }
