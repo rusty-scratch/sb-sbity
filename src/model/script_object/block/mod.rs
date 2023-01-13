@@ -10,6 +10,10 @@ pub struct Block {
     /// A string naming the block.
     pub opcode: OpCode<String>,
 
+    /// Wiki says nothing about this, probably comment id that this block attached to.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub comment: Option<Id>,
+
     /// The Id of the next block or null.
     pub next: Option<Id>,
 
@@ -373,10 +377,7 @@ impl<'de> Visitor<'de> for BlockInputValueVisitor {
                     }
                 };
 
-                Broadcast {
-                    name: Name(name),
-                    id,
-                }
+                Broadcast { name, id }
             }
             12 => {
                 let id = seq_next_element_error(
@@ -394,12 +395,7 @@ impl<'de> Visitor<'de> for BlockInputValueVisitor {
                         ))
                     }
                 };
-                Variable {
-                    name: Name(name),
-                    id,
-                    x,
-                    y,
-                }
+                Variable { name, id, x, y }
             }
             13 => {
                 let id = seq_next_element_error(
@@ -417,12 +413,7 @@ impl<'de> Visitor<'de> for BlockInputValueVisitor {
                         ))
                     }
                 };
-                List {
-                    name: Name(name),
-                    id,
-                    x,
-                    y,
-                }
+                List { name, id, x, y }
             }
             v => {
                 return Err(A::Error::invalid_value(
@@ -631,7 +622,7 @@ pub enum BlockMutationEnum {
             deserialize_with = "deserialize_json_str",
             serialize_with = "serialize_json_str"
         )]
-        argumentdefaults: Vec<Value>,
+        argumentdefaults: Vec<ValueWithBool>,
 
         /// Whether to run the block without screen refresh or not.
         #[serde(

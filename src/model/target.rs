@@ -131,6 +131,7 @@ pub struct Sprite {
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize)]
+#[serde(untagged)]
 pub enum SpriteOrStage {
     Stage(Stage),
     Sprite(Sprite),
@@ -211,7 +212,7 @@ impl<'de> Deserialize<'de> for SpriteOrStage {
             o => {
                 return Err(<D::Error as Error>::invalid_type(
                     json_to_unexpected(o),
-                    &"sprite or stage map, tagged with \"isStage\" key",
+                    &"sprite or stage map, tagged with `isStage` key",
                 ))
             }
         };
@@ -225,7 +226,7 @@ impl<'de> Deserialize<'de> for SpriteOrStage {
             o => {
                 return Err(<D::Error as Error>::invalid_value(
                     json_to_unexpected(o),
-                    &"\"isStage\" key must be the type `bool`",
+                    &"`isStage` key must be the type `bool`",
                 ))
             }
         };

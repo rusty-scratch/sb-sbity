@@ -19,6 +19,43 @@ use crate::model::{
 };
 use crate::utils::{ConstBool, ConstStr_mutation};
 
+#[allow(unused)]
+fn json_str_equal_debug_json<T>(v_json: &str, file_prefix: &str)
+where
+    T: DeserializeOwned + Serialize + PartialEq + Debug,
+{
+    use std::io::Write;
+    let v = serde_json::from_str::<T>(v_json)
+        .map_err(|e| panic!("{e}"))
+        .unwrap();
+    let v_json_after = serde_json::to_string(&v)
+        .map_err(|e| panic!("{e}"))
+        .unwrap();
+    let v_after = serde_json::from_str::<T>(&v_json_after).unwrap();
+
+    assert_eq!(v, v_after, "Assert type consistency");
+    let v_json = serde_json::from_str::<Json>(v_json).unwrap();
+    let v_json_after = serde_json::from_str::<Json>(&v_json_after).unwrap();
+    let v_json_str = serde_json::to_string_pretty(&v_json).unwrap();
+    let v_json_after_str = serde_json::to_string_pretty(&v_json_after).unwrap();
+    let mut v_json_file = std::fs::File::options()
+        .write(true)
+        .truncate(true)
+        .create(true)
+        .open(format!("{file_prefix}_before.json"))
+        .unwrap();
+    let mut v_json_after_file = std::fs::File::options()
+        .write(true)
+        .truncate(true)
+        .create(true)
+        .open(format!("{file_prefix}_after.json"))
+        .unwrap();
+    v_json_file.write(v_json_str.as_bytes()).unwrap();
+    v_json_after_file
+        .write(v_json_after_str.as_bytes())
+        .unwrap();
+}
+
 fn json_str_equal<T>(v_json: &str)
 where
     T: DeserializeOwned + Serialize + PartialEq + Debug,
@@ -36,9 +73,10 @@ where
         serde_json::from_str::<Json>(v_json).unwrap(),
         serde_json::from_str::<Json>(&v_json_after).unwrap(),
         "Assert json consistency"
-    )
+    );
 }
 
+#[allow(unused)]
 fn json_equal<T>(v_json: Json)
 where
     T: DeserializeOwned + Serialize + PartialEq + Debug,
@@ -52,7 +90,7 @@ where
         v_json,
         serde_json::from_str::<Json>(&v_json_after).unwrap(),
         "Assert json consistency"
-    )
+    );
 }
 
 macro_rules! test_json {
@@ -69,10 +107,6 @@ macro_rules! test_json {
     }
 }
 
-fn from_file<P: AsRef<std::path::Path>>(p: P) -> String {
-    std::fs::read_to_string(p).unwrap()
-}
-
 #[cfg(test)]
 mod asset;
 #[cfg(test)]
@@ -84,9 +118,9 @@ mod id;
 #[cfg(test)]
 mod monitor;
 #[cfg(test)]
-mod project;
-#[cfg(test)]
 mod script_data;
+#[cfg(test)]
+mod target;
 #[cfg(test)]
 mod utils;
 #[cfg(test)]

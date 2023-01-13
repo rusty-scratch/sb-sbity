@@ -11,6 +11,6 @@ pub use crate::model::{
     name::Name,
     opcode::OpCode,
     string_hashmap::StringHashMap,
-    value::{Float, Id, Int, Number, Text, Value},
+    value::{Float, Id, Int, Number, Text, Value, ValueWithBool},
 };
 pub(crate) use crate::utils;

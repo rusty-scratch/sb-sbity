@@ -36,10 +36,10 @@ pub struct Comment {
     pub block_id: Option<Id>,
 
     /// The x-coordinate of the comment in the code area.
-    pub x: Number,
+    pub x: Option<Number>,
 
     /// The y-coordinate of the comment in the code area.
-    pub y: Number,
+    pub y: Option<Number>,
 
     /// The width.
     pub width: Number,
