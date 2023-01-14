@@ -1,4 +1,5 @@
-pub use getset::Getters;
+//! For to use within the crate
+
 pub use serde::{
     de::Unexpected,
     de::{DeserializeOwned, Visitor},
@@ -7,10 +8,8 @@ pub use serde::{
 pub use serde_json::Value as Json;
 pub use serde_repr::{Deserialize_repr, Serialize_repr};
 
-pub use crate::model::{
-    name::Name,
-    opcode::OpCode,
-    string_hashmap::StringHashMap,
-    value::{Float, Id, Int, Number, Text, Value, ValueWithBool},
-};
 pub(crate) use crate::utils;
+pub use crate::{
+    string_hashmap::StringHashMap,
+    value::{Float, Id, Int, Name, Number, OpCode, Text, Value, ValueWithBool},
+};

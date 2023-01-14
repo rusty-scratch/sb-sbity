@@ -1,99 +1,57 @@
-use crate::model::prelude::*;
-use std::ops::Deref;
+use serde::{
+    de::{Deserialize, DeserializeOwned, Deserializer, Unexpected},
+    ser::{Serialize, Serializer},
+};
+use serde_json::Value as Json;
 
-#[derive(Debug, Default, Clone, Copy, PartialEq, Eq)]
-pub struct ConstBool<const VAL: bool>;
-
-impl<const VAL: bool> Serialize for ConstBool<VAL> {
-    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-    where
-        S: serde::Serializer,
-    {
-        serializer.serialize_bool(VAL)
-    }
+pub fn is_false(v: &bool) -> bool {
+    !v
 }
 
-impl<'de, const VAL: bool> Deserialize<'de> for ConstBool<VAL> {
-    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
-    where
-        D: serde::Deserializer<'de>,
-    {
-        deserializer.deserialize_bool(ConstBool)
-    }
-}
-
-impl<'de, const VAL: bool> Visitor<'de> for ConstBool<VAL> {
-    type Value = Self;
-
-    fn expecting(&self, formatter: &mut std::fmt::Formatter) -> std::fmt::Result {
-        formatter.write_str("bool")
-    }
-
-    fn visit_bool<E>(self, v: bool) -> Result<Self::Value, E>
-    where
-        E: serde::de::Error,
-    {
-        if v == VAL {
-            Ok(Self)
-        } else {
-            Err(E::custom(&format!("expecting {}", VAL)))
+pub fn json_to_unexpected(json: &Json) -> Unexpected<'_> {
+    match json {
+        Json::Null => Unexpected::Unit,
+        Json::Bool(b) => Unexpected::Bool(*b),
+        Json::Number(n) => {
+            if let Some(n) = n.as_i64() {
+                Unexpected::Signed(n)
+            } else if let Some(n) = n.as_u64() {
+                Unexpected::Unsigned(n)
+            } else if let Some(n) = n.as_f64() {
+                Unexpected::Float(n)
+            } else {
+                unreachable!()
+            }
         }
+        Json::String(s) => Unexpected::Str(s),
+        Json::Array(_) => Unexpected::Seq,
+        Json::Object(_) => Unexpected::Map,
     }
 }
 
-pub fn is_false(b: &bool) -> bool {
-    !b
+pub fn deserialize_json_str<'de, D, T>(de: D) -> Result<T, D::Error>
+where
+    D: Deserializer<'de>,
+    T: DeserializeOwned,
+{
+    use serde::de::Error;
+
+    let v = Json::deserialize(de)?;
+    let s = v.as_str().ok_or_else(|| {
+        D::Error::invalid_value(
+            serde::de::Unexpected::Other(&v.to_string()),
+            &"A str of json",
+        )
+    })?;
+    let v = serde_json::from_str::<T>(s).map_err(|e| D::Error::custom(e))?;
+
+    Ok(v)
 }
 
-/// This is only for serializing compile time constant field where the field never change.
-/// Type is `&str` and always serialize `"mutation"`
-#[derive(Debug, PartialEq, Clone)]
-#[allow(non_camel_case_types)]
-pub(crate) struct ConstStr_mutation;
-
-impl ConstStr_mutation {
-    const VALUE: &str = "mutation";
-}
-
-impl Serialize for ConstStr_mutation {
-    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-    where
-        S: serde::Serializer,
-    {
-        serializer.serialize_str(Self::VALUE)
-    }
-}
-
-impl<'de> Deserialize<'de> for ConstStr_mutation {
-    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
-    where
-        D: Deserializer<'de>,
-    {
-        deserializer.deserialize_str(ConstStr_mutation)
-    }
-}
-
-impl<'de> Visitor<'de> for ConstStr_mutation {
-    type Value = Self;
-
-    fn expecting(&self, formatter: &mut std::fmt::Formatter) -> std::fmt::Result {
-        formatter.write_str("mutation")
-    }
-
-    fn visit_str<E>(self, v: &str) -> Result<Self::Value, E>
-    where
-        E: serde::de::Error,
-    {
-        if v == "mutation" {
-            Ok(ConstStr_mutation)
-        } else {
-            Err(E::invalid_value(Unexpected::Str(v), &"mutation"))
-        }
-    }
-}
-
-impl Default for ConstStr_mutation {
-    fn default() -> Self {
-        Self
-    }
+pub fn serialize_json_str<S, T>(s: &T, ser: S) -> Result<S::Ok, S::Error>
+where
+    S: Serializer,
+    T: Serialize,
+{
+    ser.serialize_str(&serde_json::to_string(s).unwrap())
 }

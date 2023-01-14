@@ -1,10 +1,10 @@
-//! Module to deal with Scratch's asset
+//! Module to deal with Scratch asset
 
-use crate::model::prelude::*;
+use crate::prelude::*;
 
 /// Costume Asset.
 /// Is considered backdrop if stage.
-#[derive(Debug, Clone, PartialEq, Getters, Deserialize, Serialize)]
+#[derive(Debug, Clone, PartialEq, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Costume {
     /// The x-coordinate of the rotation center.
@@ -20,11 +20,11 @@ pub struct Costume {
 
     /// See [`Asset`]
     #[serde(flatten)]
-    pub asset: Asset
+    pub asset: Asset,
 }
 
 /// Sound Asset.
-#[derive(Debug, Clone, PartialEq, Getters, Deserialize, Serialize)]
+#[derive(Debug, Clone, PartialEq, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Sound {
     /// The sampling rate of the sound in Hertz.
@@ -35,19 +35,16 @@ pub struct Sound {
 
     /// This is for some reason exists in the file but is not documented on the wiki.
     /// I'm not exactly sure what they do since this is always empty.
-    #[serde(
-        skip_serializing_if = "Option::is_none",
-        default
-    )]
+    #[serde(skip_serializing_if = "Option::is_none", default)]
     format: Option<String>,
 
     /// See [`Asset`]
     #[serde(flatten)]
-    pub asset: Asset
+    pub asset: Asset,
 }
 
 /// An asset is a costume or sound. (Backdrops are considered costumes.)
-#[derive(Debug, Clone, PartialEq, Getters, Deserialize, Serialize)]
+#[derive(Debug, Clone, PartialEq, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Asset {
     /// The MD5 hash of the asset file.
@@ -58,10 +55,7 @@ pub struct Asset {
 
     /// The name of the asset file.
     /// None if using the default asset.
-    #[serde(
-        default,
-        skip_serializing_if = "Option::is_none"
-    )]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
     pub md5ext: Option<String>,
 
     /// The name of the format of the asset file.

@@ -1,34 +1,13 @@
-use crate::model::asset::{Costume, Sound};
-use crate::model::prelude::*;
-use crate::model::script_object::{block::Block, Broadcast, Comment, List, Variable};
-use crate::model::string_hashmap::StringHashMap;
+//! Module to deal with Scratch target
 
-#[derive(Debug, PartialEq, Deserialize, Serialize)]
-#[serde(rename_all = "camelCase")]
-pub struct Project {
-    pub meta: Meta,
-    pub extensions: Json,
-    pub monitors: Json,
-    // pub targets: Json,
-    pub targets: Vec<SpriteOrStage>,
-}
-
-/// About the project's author and the Scratch version used.
-#[derive(Debug, PartialEq, Clone, Deserialize, Serialize)]
-#[serde(rename_all = "camelCase")]
-pub struct Meta {
-    /// Always `3.0.0`.
-    pub semver: String,
-
-    /// The version of the Scratch VM that the project was created with.
-    pub vm: String,
-
-    /// The user agent of the last person to edit the project from the editor.
-    pub agent: String,
-}
+use crate::asset::{Costume, Sound};
+use crate::prelude::*;
+use crate::string_hashmap::StringHashMap;
+use crate::{block::Block, broadcast::Broadcast, comment::Comment, list::List, variable::Variable};
+use utils::json_to_unexpected;
 
 /// A target is the stage or a sprite.
-#[derive(Debug, PartialEq, Clone, Getters, Serialize, Deserialize)]
+#[derive(Debug, PartialEq, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Target {
     /// The name of the sprite. Always "Stage" for the stage.
@@ -95,7 +74,9 @@ pub struct Stage {
     // TODO: Create TextToSpeechLangage struct
     pub text_to_speech_language: Option<Json>,
 
-    pub is_stage: utils::ConstBool<true>,
+    /// Always true for stage when serialize
+    /// I wonder what happend if i insert false in here
+    pub is_stage: bool,
 }
 
 /// Scratch Sprite
@@ -127,7 +108,9 @@ pub struct Sprite {
     /// See [`RotationStyle`]
     pub rotation_style: RotationStyle,
 
-    pub is_stage: utils::ConstBool<false>,
+    /// Always false for sprite
+    /// I wonder what happend if i insert true in here
+    pub is_stage: bool,
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize)]
@@ -178,27 +161,7 @@ pub enum RotationStyle {
     DontRotate,
 }
 
-// Serde impl ==========================================================================================================
-fn json_to_unexpected(json: &Json) -> Unexpected<'_> {
-    match json {
-        Json::Null => Unexpected::Unit,
-        Json::Bool(b) => Unexpected::Bool(*b),
-        Json::Number(n) => {
-            if let Some(n) = n.as_i64() {
-                Unexpected::Signed(n)
-            } else if let Some(n) = n.as_u64() {
-                Unexpected::Unsigned(n)
-            } else if let Some(n) = n.as_f64() {
-                Unexpected::Float(n)
-            } else {
-                unreachable!()
-            }
-        }
-        Json::String(s) => Unexpected::Str(s),
-        Json::Array(_) => Unexpected::Seq,
-        Json::Object(_) => Unexpected::Map,
-    }
-}
+// Serde impl ==================================================================
 
 impl<'de> Deserialize<'de> for SpriteOrStage {
     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
@@ -241,20 +204,3 @@ impl<'de> Deserialize<'de> for SpriteOrStage {
         }
     }
 }
-
-// struct SpriteOrStageVisitor;
-
-// impl<'de> Visitor<'de> for SpriteOrStageVisitor {
-//     type Value = SpriteOrStage;
-
-//     fn expecting(&self, formatter: &mut std::fmt::Formatter) -> std::fmt::Result {
-//         formatter.write_str("sprite or stage map, tagged with \"isStage\" key")
-//     }
-
-//     fn visit_map<A>(self, map: A) -> Result<Self::Value, A::Error>
-//     where
-//         A: serde::de::MapAccess<'de>,
-//     {
-//         map.try_into
-//     }
-// }

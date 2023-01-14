@@ -1,11 +1,11 @@
-//! Typing the Scratch's block is so big. I have to put it in a another module.
+//! Module to deal with Scratch block
 
-use crate::model::prelude::*;
+use crate::prelude::*;
+use utils::{deserialize_json_str, serialize_json_str};
 
 /// Scratch scripting block
-#[derive(Debug, PartialEq, Clone, Getters, Deserialize, Serialize)]
+#[derive(Debug, PartialEq, Clone, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
-#[get = "pub"]
 pub struct Block {
     /// A string naming the block.
     pub opcode: OpCode<String>,
@@ -60,13 +60,6 @@ pub struct BlockInput {
     pub inputs: Vec<Option<IdOrValue>>,
 }
 
-impl BlockInput {
-    /// Use for serializing
-    fn size_hint(&self) -> usize {
-        1 + self.inputs.len()
-    }
-}
-
 /// Used for [`BlockInput`]
 /// When the input could be either [`Id`] or [`BlockInputValue`]
 #[derive(Debug, Clone, PartialEq, Deserialize, Serialize)]
@@ -78,56 +71,115 @@ pub enum IdOrValue {
     Value(BlockInputValue),
 }
 
-struct BlockInputVisitor;
+/// Field of the block
+#[derive(Debug, Clone, PartialEq)]
+pub enum BlockField {
+    /// Field when Id are sometimes needed
+    WithId {
+        /// Value of the field
+        value: Value,
 
-impl<'de> Visitor<'de> for BlockInputVisitor {
-    type Value = BlockInput;
-
-    fn expecting(&self, formatter: &mut std::fmt::Formatter) -> std::fmt::Result {
-        formatter.write_str("list that is a block input")
-    }
-
-    fn visit_seq<A>(self, mut seq: A) -> Result<Self::Value, A::Error>
-    where
-        A: serde::de::SeqAccess<'de>,
-    {
-        use serde::de::Error;
-
-        let shadow = seq.next_element::<ShadowInputType>()?.ok_or_else(|| {
-            A::Error::invalid_length(0, &"Expected 2 or more elements for block input")
-        })?;
-
-        let mut inputs = vec![];
-        while let Some(v) = seq.next_element::<Option<IdOrValue>>()? {
-            inputs.push(v)
-        }
-
-        Ok(BlockInput { shadow, inputs })
-    }
+        /// For certain fields,
+        /// such as variable and broadcast dropdown menus,
+        /// there is also a second element, which is the Id of the field's value.
+        id: Option<Id>,
+    },
+    /// Field with no Id needed
+    NoId {
+        /// Value of the field
+        value: Value,
+    },
 }
 
-impl<'de> Deserialize<'de> for BlockInput {
-    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
-    where
-        D: Deserializer<'de>,
-    {
-        deserializer.deserialize_seq(BlockInputVisitor)
-    }
+/// Mutation for procedural block (custom block) or stop block
+#[derive(Debug, Clone, PartialEq, Deserialize, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct BlockMutation {
+    /// Always equal to "mutation".
+    /// Don't know if there any other tag
+    /// Wiki says there's only "mutation" though
+    tag_name: String,
+
+    /// Seems to always be an empty array.
+    children: [(); 0],
+
+    /// See [`BlockMutationEnum`]
+    #[serde(flatten)]
+    pub mutation_enum: BlockMutationEnum,
 }
 
-impl Serialize for BlockInput {
-    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-    where
-        S: Serializer,
-    {
-        use serde::ser::SerializeSeq;
-        let mut s = serializer.serialize_seq(Some(self.size_hint()))?;
-        s.serialize_element(&self.shadow)?;
-        for v in &self.inputs {
-            s.serialize_element(&v)?;
-        }
-        s.end()
-    }
+/// Different mutation has different properties.
+/// This enum define them.
+#[derive(Debug, Clone, PartialEq, Deserialize, Serialize)]
+#[serde(untagged)]
+pub enum BlockMutationEnum {
+    /// opcode is `"procedures_prototype"` mutations have the following additional properties
+    ProceduresPrototype {
+        /// The name of the custom block, including inputs: %s for string/number inputs and %b for boolean inputs.
+        proccode: String,
+
+        /// An array of the ids of the arguments; these can also be found in the input property of the main block.
+        #[serde(
+            deserialize_with = "deserialize_json_str",
+            serialize_with = "serialize_json_str"
+        )]
+        argumentids: Vec<Id>,
+
+        /// An array of the names of the arguments.
+        #[serde(
+            deserialize_with = "deserialize_json_str",
+            serialize_with = "serialize_json_str"
+        )]
+        argumentnames: Vec<Name>,
+
+        /// An array of the defaults of the arguments.
+        ///  - String default is an empty string
+        ///  - bool default is `false`
+        #[serde(
+            deserialize_with = "deserialize_json_str",
+            serialize_with = "serialize_json_str"
+        )]
+        argumentdefaults: Vec<ValueWithBool>,
+
+        /// Whether to run the block without screen refresh or not.
+        #[serde(
+            deserialize_with = "deserialize_json_str",
+            serialize_with = "serialize_json_str"
+        )]
+        warp: Option<bool>,
+    },
+
+    /// opcode is `"procedures_call"` mutations have the following additional properties
+    ProceduresCall {
+        /// The name of the custom block, including inputs: %s for string/number inputs and %b for boolean inputs.
+        proccode: String,
+
+        /// An array of the ids of the arguments; these can also be found in the input property of the main block.
+        #[serde(
+            deserialize_with = "deserialize_json_str",
+            serialize_with = "serialize_json_str"
+        )]
+        argumentids: Vec<Id>,
+
+        /// Whether to run the block without screen refresh or not.
+        #[serde(
+            deserialize_with = "deserialize_json_str",
+            serialize_with = "serialize_json_str"
+        )]
+        warp: Option<bool>,
+    },
+
+    /// opcode is `"control_stop"` mutations have the following additional property
+    ControlStop {
+        /// Whether the block has a block following it or not
+        ///  - false for stop all and stop all in sprite
+        ///  - true for stop other scripts in sprite)
+        #[serde(
+            deserialize_with = "deserialize_json_str",
+            serialize_with = "serialize_json_str"
+        )]
+        hasnext: bool,
+    },
 }
 
 /// Shadow enum for [`BlockInput`]
@@ -232,6 +284,67 @@ pub enum BlockInputValue {
         /// Position y of the variable if top_level
         y: Option<Number>,
     },
+}
+
+// Serde impl ==================================================================
+
+impl BlockInput {
+    /// Use for serializing
+    fn size_hint(&self) -> usize {
+        1 + self.inputs.len()
+    }
+}
+
+struct BlockInputVisitor;
+
+impl<'de> Visitor<'de> for BlockInputVisitor {
+    type Value = BlockInput;
+
+    fn expecting(&self, formatter: &mut std::fmt::Formatter) -> std::fmt::Result {
+        formatter.write_str("list that is a block input")
+    }
+
+    fn visit_seq<A>(self, mut seq: A) -> Result<Self::Value, A::Error>
+    where
+        A: serde::de::SeqAccess<'de>,
+    {
+        use serde::de::Error;
+
+        let shadow = seq.next_element::<ShadowInputType>()?.ok_or_else(|| {
+            A::Error::invalid_length(0, &"Expected 2 or more elements for block input")
+        })?;
+
+        let mut inputs = vec![];
+        while let Some(v) = seq.next_element::<Option<IdOrValue>>()? {
+            inputs.push(v)
+        }
+
+        Ok(BlockInput { shadow, inputs })
+    }
+}
+
+impl<'de> Deserialize<'de> for BlockInput {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: Deserializer<'de>,
+    {
+        deserializer.deserialize_seq(BlockInputVisitor)
+    }
+}
+
+impl Serialize for BlockInput {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        use serde::ser::SerializeSeq;
+        let mut s = serializer.serialize_seq(Some(self.size_hint()))?;
+        s.serialize_element(&self.shadow)?;
+        for v in &self.inputs {
+            s.serialize_element(&v)?;
+        }
+        s.end()
+    }
 }
 
 impl BlockInputValue {
@@ -475,26 +588,6 @@ impl Serialize for BlockInputValue {
     }
 }
 
-/// Field of the block
-#[derive(Debug, Clone, PartialEq)]
-pub enum BlockField {
-    /// Field when Id are sometimes needed
-    WithId {
-        /// Value of the field
-        value: Value,
-
-        /// For certain fields,
-        /// such as variable and broadcast dropdown menus,
-        /// there is also a second element, which is the Id of the field's value.
-        id: Option<Id>,
-    },
-    /// Field with no Id needed
-    NoId {
-        /// Value of the field
-        value: Value,
-    },
-}
-
 impl BlockField {
     /// Value of the field
     #[inline(always)]
@@ -574,120 +667,4 @@ impl Serialize for BlockField {
             }
         }
     }
-}
-
-/// Mutation for procedural block (custom block) or stop block
-#[derive(Debug, Clone, PartialEq, Getters, Deserialize, Serialize)]
-#[serde(rename_all = "camelCase")]
-pub struct BlockMutation {
-    /// Always equal to "mutation".
-    tag_name: utils::ConstStr_mutation,
-
-    /// Seems to always be an empty array.
-    children: [(); 0],
-
-    /// See [`BlockMutationEnum`]
-    #[serde(flatten)]
-    pub mutation_enum: BlockMutationEnum,
-}
-
-/// Different mutation has different properties.
-/// This enum define them.
-#[derive(Debug, Clone, PartialEq, Deserialize, Serialize)]
-#[serde(untagged)]
-pub enum BlockMutationEnum {
-    /// opcode is `"procedures_prototype"` mutations have the following additional properties
-    ProceduresPrototype {
-        /// The name of the custom block, including inputs: %s for string/number inputs and %b for boolean inputs.
-        proccode: String,
-
-        /// An array of the ids of the arguments; these can also be found in the input property of the main block.
-        #[serde(
-            deserialize_with = "deserialize_json_str",
-            serialize_with = "serialize_json_str"
-        )]
-        argumentids: Vec<Id>,
-
-        /// An array of the names of the arguments.
-        #[serde(
-            deserialize_with = "deserialize_json_str",
-            serialize_with = "serialize_json_str"
-        )]
-        argumentnames: Vec<Name>,
-
-        /// An array of the defaults of the arguments.
-        ///  - String default is an empty string
-        ///  - bool default is `false`
-        #[serde(
-            deserialize_with = "deserialize_json_str",
-            serialize_with = "serialize_json_str"
-        )]
-        argumentdefaults: Vec<ValueWithBool>,
-
-        /// Whether to run the block without screen refresh or not.
-        #[serde(
-            deserialize_with = "deserialize_json_str",
-            serialize_with = "serialize_json_str"
-        )]
-        warp: Option<bool>,
-    },
-
-    /// opcode is `"procedures_call"` mutations have the following additional properties
-    ProceduresCall {
-        /// The name of the custom block, including inputs: %s for string/number inputs and %b for boolean inputs.
-        proccode: String,
-
-        /// An array of the ids of the arguments; these can also be found in the input property of the main block.
-        #[serde(
-            deserialize_with = "deserialize_json_str",
-            serialize_with = "serialize_json_str"
-        )]
-        argumentids: Vec<Id>,
-
-        /// Whether to run the block without screen refresh or not.
-        #[serde(
-            deserialize_with = "deserialize_json_str",
-            serialize_with = "serialize_json_str"
-        )]
-        warp: Option<bool>,
-    },
-
-    /// opcode is `"control_stop"` mutations have the following additional property
-    ControlStop {
-        /// Whether the block has a block following it or not
-        ///  - false for stop all and stop all in sprite
-        ///  - true for stop other scripts in sprite)
-        #[serde(
-            deserialize_with = "deserialize_json_str",
-            serialize_with = "serialize_json_str"
-        )]
-        hasnext: bool,
-    },
-}
-
-fn deserialize_json_str<'de, D, T>(de: D) -> Result<T, D::Error>
-where
-    D: Deserializer<'de>,
-    T: DeserializeOwned,
-{
-    use serde::de::Error;
-
-    let v = Json::deserialize(de)?;
-    let s = v.as_str().ok_or_else(|| {
-        D::Error::invalid_value(
-            serde::de::Unexpected::Other(&v.to_string()),
-            &"A str of json",
-        )
-    })?;
-    let v = serde_json::from_str::<T>(s).map_err(|e| D::Error::custom(e))?;
-
-    Ok(v)
-}
-
-fn serialize_json_str<S, T>(s: &T, ser: S) -> Result<S::Ok, S::Error>
-where
-    S: Serializer,
-    T: Serialize,
-{
-    ser.serialize_str(&serde_json::to_string(s).unwrap())
 }

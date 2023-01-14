@@ -1,40 +1,24 @@
-use std::{collections::HashMap, marker::PhantomData, fmt};
-use crate::model::prelude::*;
+//! Module to deal with Serde map
+
+use crate::prelude::*;
 use serde::de::MapAccess;
 use serde::ser::SerializeMap;
+use std::{collections::HashMap, fmt, marker::PhantomData};
 
 /// HashMap<String, V>
 #[derive(Debug, PartialEq, Clone)]
 pub struct StringHashMap<V>(pub HashMap<String, V>);
 
-impl<V> StringHashMap<V> {
-    // /// Automatically generate key for the value that does not exist in the hasmap
-    // /// gen_func is function to use to generate the random ID
-    // pub fn insert<F>(&mut self, gen_func: F, v: T)
-    // where
-    //     F: Fn() -> ID
-    // {
-    //     let k = loop {
-    //         let k = gen_func();
-    //         if self.0.get(&k).is_none() {
-    //             break k 
-    //         }
-    //     };
-
-    //     let r = self.0.insert(k, v);
-    //     assert!(r.is_none(), "R should be None!");
-    // }
-}
+// Serde impl ==================================================================
 
 struct StringHashMapVisitor<V> {
-    marker: PhantomData<fn() -> StringHashMap<V>>
+    marker: PhantomData<fn() -> StringHashMap<V>>,
 }
 
-impl<V> StringHashMapVisitor<V>
-{
+impl<V> StringHashMapVisitor<V> {
     fn new() -> Self {
         StringHashMapVisitor {
-            marker: PhantomData
+            marker: PhantomData,
         }
     }
 }
@@ -48,7 +32,7 @@ where
     fn expecting(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
         formatter.write_str("string map")
     }
-    
+
     fn visit_map<M>(self, mut access: M) -> Result<Self::Value, M::Error>
     where
         M: MapAccess<'de>,
@@ -76,11 +60,10 @@ where
     }
 }
 
-impl<V: Serialize> Serialize for StringHashMap<V>
-{
+impl<V: Serialize> Serialize for StringHashMap<V> {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
-        S: serde::Serializer
+        S: serde::Serializer,
     {
         let mut map_serializer = serializer.serialize_map(Some(self.0.len()))?;
         for (k, v) in &self.0 {

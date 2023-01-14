@@ -1,23 +1,25 @@
 use std::fmt::Debug;
 
-use crate::model::prelude::*;
-use crate::model::{
+// The unused import mean that it has no test.
+// I'm too lazy to do all of them.
+use crate::prelude::*;
+#[allow(unused)]
+use crate::{
     asset::{Costume, Sound},
-    monitor::{ListOrValue, Mode, Monitor, MonitorOpCode, NumberName, Parameter, Slider},
-    name::Name,
-    opcode::OpCode,
-    script_object::{
-        block::{
-            Block, BlockField, BlockInput, BlockInputValue, BlockMutation, BlockMutationEnum,
-            ShadowInputType,
-        },
-        Broadcast, Comment, List, Variable,
+    block::{
+        Block, BlockField, BlockInput, BlockInputValue, BlockMutation, BlockMutationEnum,
+        ShadowInputType,
     },
+    broadcast::Broadcast,
+    comment::Comment,
+    list::List,
+    monitor::{ListOrValue, Mode, Monitor, MonitorOpCode, NumberName, Parameter, Slider},
+    project::{Meta, Project},
     string_hashmap::StringHashMap,
-    target::{Meta, Project, RotationStyle, Sprite, SpriteOrStage, Stage, VideoState},
-    value::{Float, Id, Int, Number, Text, Value},
+    target::{RotationStyle, Sprite, SpriteOrStage, Stage, VideoState},
+    value::{Float, Id, Int, Name, Number, OpCode, Text, Value},
+    variable::Variable,
 };
-use crate::utils::{ConstBool, ConstStr_mutation};
 
 #[allow(unused)]
 fn json_str_equal_debug_json<T>(v_json: &str, file_prefix: &str)
@@ -118,15 +120,10 @@ mod id;
 #[cfg(test)]
 mod monitor;
 #[cfg(test)]
+mod project;
+#[cfg(test)]
 mod script_data;
 #[cfg(test)]
 mod target;
 #[cfg(test)]
-mod utils;
-#[cfg(test)]
 mod value;
-
-test_json! {
-    // intermediate_test(intermediate::Project):
-    //     &from_file("src/test_json/intermediate_testcase.json");
-}

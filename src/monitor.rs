@@ -1,51 +1,51 @@
 //! Module to deal with Scratch monitor
 
-use crate::model::prelude::*;
+use crate::prelude::*;
 use serde::ser::SerializeMap;
 
 /// A Stage monitor, sometimes called a watcher, is a display on the Stage that shows the value of a variable, boolean, or a list.
-#[derive(Debug, PartialEq, Clone, Getters, Deserialize, Serialize)]
+#[derive(Debug, PartialEq, Clone, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Monitor {
     /// The Id.
-    id: Id,
+    pub id: Id,
 
     /// See [`Mode`]
-    mode: Mode,
+    pub mode: Mode,
 
     /// See [`MonitorOpCode`]
-    opcode: OpCode<MonitorOpCode>,
+    pub opcode: OpCode<MonitorOpCode>,
 
     /// See [`Parameter`]
     #[serde(rename = "params")]
-    params: Parameter,
+    pub params: Parameter,
 
     /// The name of the target the monitor belongs to, if any.
     /// [`None`] if is global var.
-    sprite_name: Option<Name>,
+    pub sprite_name: Option<Name>,
 
     /// The value appearing on the monitor.
-    value: ListOrValue,
+    pub value: ListOrValue,
 
     /// The width.
-    width: u64,
+    pub width: u64,
 
     /// The height.
-    height: u64,
+    pub height: u64,
 
     /// The x-coordinate.
-    x: i64,
+    pub x: i64,
 
     /// The y-coordinate.
-    y: i64,
+    pub y: i64,
 
     /// True if the monitor is visible and false otherwise.
-    visible: bool,
+    pub visible: bool,
 
     /// See [`Slider`]
     /// [`None`] if [`Mode`] is [`Mode::List`]
     #[serde(flatten)]
-    slider: Option<Slider>,
+    pub slider: Option<Slider>,
 }
 
 /// OP code for type of data this monitor is showing
@@ -114,8 +114,6 @@ pub enum Mode {
 }
 
 /// Name of list or variable that this monitor refering to
-
-// I was suppose to use field_hash_map for this job but since I've done this so I'm going to use this.
 #[derive(Debug, PartialEq, Clone)]
 pub enum Parameter {
     /// No parameter
@@ -130,6 +128,44 @@ pub enum Parameter {
     /// See [`NumberName`]
     NumberName(NumberName),
 }
+
+/// Enum for monitor value.
+/// The field could be either value or list.
+#[derive(Debug, PartialEq, Clone, Deserialize, Serialize)]
+#[serde(untagged)]
+pub enum ListOrValue {
+    /// When the field is not a list
+    Value(Value),
+    /// When the field is a list
+    List(Vec<Value>),
+}
+
+/// Show number or name of a chosen variable
+#[derive(Debug, PartialEq, Eq, Clone, Copy, Deserialize, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub enum NumberName {
+    /// Show variable as number
+    Number,
+
+    /// Show variable as name
+    Name,
+}
+
+/// Monitors that do not belong to lists also have these properties
+#[derive(Debug, PartialEq, Eq, Clone, Copy, Deserialize, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct Slider {
+    /// The minimum value of the monitor's slider.
+    slider_min: i64,
+
+    /// The maximum value of the monitor's slider.
+    slider_max: i64,
+
+    /// True if the monitor's slider allows only integer values and false otherwise.
+    is_discrete: bool,
+}
+
+// Serde impl ==================================================================
 
 struct ParameterVisitor;
 
@@ -147,7 +183,7 @@ impl<'de> Visitor<'de> for ParameterVisitor {
         use serde::de::Error;
         if let Some((k, v)) = map.next_entry::<&str, &str>()? {
             Ok(match (k, v) {
-                ("VARIABLE", v) => Parameter::Variable(v.into()),
+                ("VARIABLE", v) => Parameter::Variable(v.to_owned()),
                 ("LIST", v) => Parameter::List(v.into()),
                 ("NUMBER_NAME", "name") => Parameter::NumberName(NumberName::Name),
                 ("NUMBER_NAME", "number") => Parameter::NumberName(NumberName::Number),
@@ -192,40 +228,4 @@ impl Serialize for Parameter {
             }
         }
     }
-}
-
-/// Enum for monitor value.
-/// The field could be either value or list.
-#[derive(Debug, PartialEq, Clone, Deserialize, Serialize)]
-#[serde(untagged)]
-pub enum ListOrValue {
-    /// When the field is not a list
-    Value(Value),
-    /// When the field is a list
-    List(Vec<Value>),
-}
-
-/// Show number or name of a chosen variable
-#[derive(Debug, PartialEq, Eq, Clone, Copy, Deserialize, Serialize)]
-#[serde(rename_all = "camelCase")]
-pub enum NumberName {
-    /// Show variable as number
-    Number,
-
-    /// Show variable as name
-    Name,
-}
-
-/// Monitors that do not belong to lists also have these properties
-#[derive(Debug, PartialEq, Eq, Clone, Copy, Getters, Deserialize, Serialize)]
-#[serde(rename_all = "camelCase")]
-pub struct Slider {
-    /// The minimum value of the monitor's slider.
-    slider_min: i64,
-
-    /// The maximum value of the monitor's slider.
-    slider_max: i64,
-
-    /// True if the monitor's slider allows only integer values and false otherwise.
-    is_discrete: bool,
 }
