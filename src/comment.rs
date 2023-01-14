@@ -2,7 +2,7 @@
 
 use crate::prelude::*;
 
-/// Adjustable textboxes that can be attached to [`block::Block`]s, or left floating
+/// Adjustable textboxes that can be attached to [`crate::block::Block`]s, or left floating
 #[derive(Debug, PartialEq, Clone, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Comment {
