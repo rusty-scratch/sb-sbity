@@ -1,8 +1,8 @@
 [package]
 name = "rs-sb3"
-version = "0.1.1"
+version = "0.1.2"
 edition = "2021"
-author = ["Multirious"]
+authors = ["Multirious"]
 description = "sb3 json serializer"
 readme = "README.md"
 repository = "https://github.com/Multirious/rs-sb3/"

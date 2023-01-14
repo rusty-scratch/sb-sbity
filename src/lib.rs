@@ -13,9 +13,7 @@ pub mod comment;
 pub mod list;
 pub mod variable;
 
-#[cfg(test)]
-pub mod test_serde;
-
 pub(crate) mod prelude;
-
+#[cfg(test)]
+mod test_serde;
 mod utils;
