@@ -23,8 +23,19 @@ pub struct Costume {
     pub asset: Asset,
 }
 
+impl Default for Costume {
+    fn default() -> Self {
+        Costume {
+            rotation_center_x: Number::Int(0),
+            rotation_center_y: Number::Int(0),
+            bitmap_resolution: None,
+            asset: Default::default(),
+        }
+    }
+}
+
 /// Sound Asset.
-#[derive(Debug, Clone, PartialEq, Deserialize, Serialize)]
+#[derive(Debug, Default, Clone, PartialEq, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Sound {
     /// The sampling rate of the sound in Hertz.
@@ -44,7 +55,7 @@ pub struct Sound {
 }
 
 /// An asset is a costume or sound. (Backdrops are considered costumes.)
-#[derive(Debug, Clone, PartialEq, Deserialize, Serialize)]
+#[derive(Debug, Default, Clone, PartialEq, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Asset {
     /// The MD5 hash of the asset file.

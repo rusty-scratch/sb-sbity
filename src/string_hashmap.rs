@@ -6,7 +6,7 @@ use serde::ser::SerializeMap;
 use std::{collections::HashMap, fmt, marker::PhantomData};
 
 /// HashMap<String, V>
-#[derive(Debug, PartialEq, Clone)]
+#[derive(Debug, Default, PartialEq, Clone, Eq)]
 pub struct StringHashMap<V>(pub HashMap<String, V>);
 
 // Serde impl ==================================================================
