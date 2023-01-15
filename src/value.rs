@@ -30,8 +30,53 @@ pub enum ValueWithBool {
     Bool(bool),
 }
 
+macro_rules! enum_from {
+    ($enum:ident {$($ty:ident)*}) => {
+        $(
+            impl From<$ty> for $enum {
+                fn from(v: $ty) -> Self {
+                    $enum::$ty(v)
+                }
+            }
+        )*
+    }
+}
+
+enum_from! {
+    Number {
+        Int Float
+    }
+}
+
+enum_from! {
+    Value {
+        Number Text
+    }
+}
+
+impl From<Int> for Value {
+    fn from(v: Int) -> Self {
+        Value::Number(Number::Int(v))
+    }
+}
+
+impl From<Float> for Value {
+    fn from(v: Float) -> Self {
+        Value::Number(Number::Float(v))
+    }
+}
+
+impl From<Value> for ValueWithBool {
+    fn from(v: Value) -> Self {
+        match v {
+            Value::Number(n) => ValueWithBool::Number(n),
+            Value::Text(t) => ValueWithBool::Text(t),
+        }
+    }
+}
+
 /// OP code for things like block opcode or monitor opcode
-#[derive(Debug, Clone, PartialEq, Eq, Deserialize, Serialize)]
+#[derive(Debug, Default, Clone, PartialEq, Eq, Deserialize, Serialize)]
 #[serde(transparent)]
 pub struct OpCode<T>(pub T);
 
