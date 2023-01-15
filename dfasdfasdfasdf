@@ -1,0 +1,152 @@
+* [33mcommit bfcf4860cbcef932f58709e641bb2e4621e3d615[m[33m ([m[1;36mHEAD -> [m[1;32mmain[m[33m, [m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m)[m
+[31m|[m Author: Multirious <multirious@outlook.com>
+[31m|[m Date:   Sat Jan 14 15:34:27 2023 +0700
+[31m|[m 
+[31m|[m     Add Eq and Default impl for StringHashmap
+[31m|[m 
+* [33mcommit 5d6f0a8219f19040a1865fc04032fdccf20d0eca[m
+[31m|[m Author: Multirious <multirious@outlook.com>
+[31m|[m Date:   Sat Jan 14 12:35:10 2023 +0700
+[31m|[m 
+[31m|[m     tf am i doing. Fixed cargo toml authors
+[31m|[m 
+* [33mcommit b2fae6554a739298dabc1cf39b27fbf517e0e498[m
+[31m|[m Author: Multirious <multirious@outlook.com>
+[31m|[m Date:   Sat Jan 14 12:25:16 2023 +0700
+[31m|[m 
+[31m|[m     update version
+[31m|[m 
+* [33mcommit 24f5f472f12a0dda7454bd64cab77354ee94661d[m
+[31m|[m Author: Multirious <multirious@outlook.com>
+[31m|[m Date:   Sat Jan 14 12:22:37 2023 +0700
+[31m|[m 
+[31m|[m     fix documentation and update readme
+[31m|[m 
+* [33mcommit 0656a72d26dcf89a2831a466aa5438eecfd84f46[m
+[31m|[m Author: Multirious <77918086+Multirious@users.noreply.github.com>
+[31m|[m Date:   Sat Jan 14 12:10:18 2023 +0700
+[31m|[m 
+[31m|[m     Update Cargo.toml
+[31m|[m   
+*   [33mcommit f615bab4c4c41fdd229d588cf58b419501c7985a[m
+[32m|[m[33m\[m  Merge: 1b92adf aa49324
+[32m|[m [33m|[m Author: Multirious <77918086+Multirious@users.noreply.github.com>
+[32m|[m [33m|[m Date:   Sat Jan 14 11:58:03 2023 +0700
+[32m|[m [33m|[m 
+[32m|[m [33m|[m     Add License
+[32m|[m [33m|[m     
+[32m|[m [33m|[m     Create LICENSE-MIT
+[32m|[m [33m|[m 
+[32m|[m * [33mcommit aa49324dace88d87d10bba3344b234e94b5bdadf[m
+[32m|[m[32m/[m  Author: Multirious <77918086+Multirious@users.noreply.github.com>
+[32m|[m   Date:   Sat Jan 14 11:57:22 2023 +0700
+[32m|[m   
+[32m|[m       Create LICENSE-MIT
+[32m|[m 
+* [33mcommit 1b92adf865e81e0e4d2a501a8d32b3e4d0a38fb5[m
+[33m|[m Author: Multirious <77918086+Multirious@users.noreply.github.com>
+[33m|[m Date:   Sat Jan 14 11:52:26 2023 +0700
+[33m|[m 
+[33m|[m     Update README.md
+[33m|[m 
+* [33mcommit 7eba9569a93919a63d06a8ff5f8cc8dd0f075eb1[m
+[33m|[m Author: Multirious <multirious@outlook.com>
+[33m|[m Date:   Sat Jan 14 11:51:17 2023 +0700
+[33m|[m 
+[33m|[m     refactors and added readme
+[33m|[m 
+* [33mcommit 5f5a9d655eac96699347a79c72bb9e01eb2ec9a3[m
+[33m|[m Author: Multirious <multirious@outlook.com>
+[33m|[m Date:   Fri Jan 13 22:02:31 2023 +0700
+[33m|[m 
+[33m|[m     fixes block and block mutation parser
+[33m|[m 
+* [33mcommit 88d8e2fe85d87f77baaac20d11052b592ef61f15[m
+[33m|[m Author: Multirious <multirious@outlook.com>
+[33m|[m Date:   Fri Jan 13 22:01:35 2023 +0700
+[33m|[m 
+[33m|[m     fixes block and block mutation parser
+[33m|[m 
+* [33mcommit f639dc1fce4277708cc80c1a7914385240b1590a[m
+[33m|[m Author: Multirious <Multirious@outlook.com>
+[33m|[m Date:   Fri Jan 13 19:05:39 2023 +0700
+[33m|[m 
+[33m|[m     hi
+[33m|[m 
+* [33mcommit 3b683b7826c93bb2dfedd2bf32ff43a3eaa3a977[m
+[33m|[m Author: Multirious <Multirious@outlook.com>
+[33m|[m Date:   Thu Jan 12 15:07:47 2023 +0700
+[33m|[m 
+[33m|[m     welcome back
+[33m|[m 
+* [33mcommit 56b329e3561a5502fd009769caa507613b532f49[m
+[33m|[m Author: Multirious <Multirious@outlook.com>
+[33m|[m Date:   Thu Dec 8 17:50:32 2022 +0700
+[33m|[m 
+[33m|[m     l
+[33m|[m 
+* [33mcommit 88cc6d9b7c55f839ab7bc4e42fb725daac0573cf[m
+[33m|[m Author: Multirious <Multirious@outlook.com>
+[33m|[m Date:   Thu Dec 1 15:14:43 2022 +0700
+[33m|[m 
+[33m|[m     updates
+[33m|[m 
+* [33mcommit 01e403e445765f13998c04ad90a42078bb78836c[m
+[33m|[m Author: Multirious <Multirious@outlook.com>
+[33m|[m Date:   Thu Dec 1 12:35:32 2022 +0700
+[33m|[m 
+[33m|[m     updates
+[33m|[m 
+* [33mcommit 46fae3e5ca595a6d58ec1ab24abfa7e9c8ae422c[m
+[33m|[m Author: Multirious <Multirious@outlook.com>
+[33m|[m Date:   Wed Nov 30 18:28:42 2022 +0700
+[33m|[m 
+[33m|[m     update
+[33m|[m 
+* [33mcommit 7a2a80b0f0544acb9a1f67508db7b05619daa071[m
+[33m|[m Author: Multirious <Multirious@outlook.com>
+[33m|[m Date:   Mon Nov 28 14:02:43 2022 +0700
+[33m|[m 
+[33m|[m     boy
+[33m|[m 
+* [33mcommit 1987d45e73d712fcead52f5e7bd2171358104dc2[m
+[33m|[m Author: Multirious <Multirious@outlook.com>
+[33m|[m Date:   Wed Nov 23 10:12:50 2022 +0700
+[33m|[m 
+[33m|[m     ahaha
+[33m|[m 
+* [33mcommit 4d1613f6881a88b8f773cd059d0197643dd170bf[m
+[33m|[m Author: Multirious <Multirious@outlook.com>
+[33m|[m Date:   Mon Nov 21 12:43:25 2022 +0700
+[33m|[m 
+[33m|[m     make test gen input recursive
+[33m|[m 
+* [33mcommit a52cb858fffa080b439f36da88f41ae9c7f6361e[m
+[33m|[m Author: Multirious <multirious@outlook.com>
+[33m|[m Date:   Mon Nov 21 06:59:24 2022 +0700
+[33m|[m 
+[33m|[m     test generator
+[33m|[m 
+* [33mcommit 70f206537f60b36772d70d560a2dfbefb26a8b36[m
+[33m|[m Author: Multirious <Multirious@outlook.com>
+[33m|[m Date:   Fri Nov 18 16:03:26 2022 +0700
+[33m|[m 
+[33m|[m     goofy ahhh commit
+[33m|[m 
+* [33mcommit 06711be781cbfcdf19808a67096276412519a9f3[m
+[33m|[m Author: Multirious <Multirious@outlook.com>
+[33m|[m Date:   Thu Nov 17 15:01:37 2022 +0700
+[33m|[m 
+[33m|[m     organising tests
+[33m|[m 
+* [33mcommit 6a132dc3c89df8fe2457f9058b6b617cbb2c4cca[m
+[33m|[m Author: Multirious <Multirious@outlook.com>
+[33m|[m Date:   Wed Nov 16 15:12:50 2022 +0700
+[33m|[m 
+[33m|[m     working on json test
+[33m|[m 
+* [33mcommit e84e48ea1a89cc7b27cc936bec379f14e615f5e4[m
+  Author: Multirious <Multirious@outlook.com>
+  Date:   Mon Nov 14 15:03:37 2022 +0700
+  
+      init
