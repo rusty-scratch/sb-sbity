@@ -3,7 +3,7 @@
 use crate::prelude::*;
 
 /// Adjustable textboxes that can be attached to [`crate::block::Block`]s, or left floating
-#[derive(Debug, PartialEq, Clone, Deserialize, Serialize)]
+#[derive(Debug, Default, PartialEq, Clone, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Comment {
     /// The ID of the block the comment is attached to.
