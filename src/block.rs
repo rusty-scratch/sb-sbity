@@ -51,7 +51,7 @@ pub struct Block {
 
 /// A struct representing inputs into which other blocks may be dropped, including C mouths.
 /// idk if is this possible without vec
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Default, Clone, PartialEq)]
 pub struct BlockInput {
     /// See [`ShadowInputType`]
     pub shadow: ShadowInputType,
@@ -193,13 +193,14 @@ pub enum BlockMutationEnum {
 ///
 /// This documentation might not be completed or is completed, idk.
 /// Scratch wiki didn't tell anything about this.
-#[derive(Debug, Clone, PartialEq, Deserialize_repr, Serialize_repr)]
+#[derive(Debug, Default, Clone, PartialEq, Deserialize_repr, Serialize_repr)]
 #[repr(u8)]
 pub enum ShadowInputType {
     /// There is a shadow
     Shadow = 1,
 
     /// There is no shadow
+    #[default]
     NoShadow = 2,
 
     /// There is a shadow but obscured by the input.
@@ -284,6 +285,24 @@ pub enum BlockInputValue {
         /// Position y of the variable if top_level
         y: Option<Number>,
     },
+}
+
+impl Default for Block {
+    fn default() -> Self {
+        Block {
+            opcode: OpCode::default(),
+            comment: None,
+            next: None,
+            parent: None,
+            inputs: StringHashMap::default(),
+            fields: StringHashMap::default(),
+            shadow: false,
+            top_level: true,
+            mutation: None,
+            x: Some(0.into()),
+            y: Some(0.into()),
+        }
+    }
 }
 
 // Serde impl ==================================================================

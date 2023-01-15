@@ -3,7 +3,7 @@
 use crate::prelude::*;
 
 /// Only contains in stage
-#[derive(Debug, Clone, PartialEq, Deserialize, Serialize)]
+#[derive(Debug, Default, Clone, PartialEq, Deserialize, Serialize)]
 #[serde(transparent)]
 pub struct Broadcast {
     /// Name of the broadcast

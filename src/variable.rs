@@ -4,7 +4,7 @@ use crate::prelude::*;
 use serde_tuple::{Deserialize_tuple, Serialize_tuple};
 
 /// Variable
-#[derive(Debug, PartialEq, Clone, Serialize_tuple, Deserialize_tuple)]
+#[derive(Debug, Default, PartialEq, Clone, Serialize_tuple, Deserialize_tuple)]
 pub struct Variable {
     /// Variable name.
     pub name: Text,

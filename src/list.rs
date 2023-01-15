@@ -4,7 +4,7 @@ use crate::prelude::*;
 use serde_tuple::{Deserialize_tuple, Serialize_tuple};
 
 /// List of values
-#[derive(Debug, PartialEq, Clone, Deserialize_tuple, Serialize_tuple)]
+#[derive(Debug, Default, PartialEq, Clone, Deserialize_tuple, Serialize_tuple)]
 pub struct List {
     /// List name.
     pub name: Text,
