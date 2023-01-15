@@ -288,6 +288,7 @@ pub enum BlockInputValue {
 }
 
 impl Default for Block {
+    /// This create new block that act like it's a top most block
     fn default() -> Self {
         Block {
             opcode: OpCode::default(),
