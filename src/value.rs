@@ -75,6 +75,24 @@ impl From<Value> for ValueWithBool {
     }
 }
 
+impl Default for Number {
+    fn default() -> Self {
+        Number::Int(0)
+    }
+}
+
+impl Default for Value {
+    fn default() -> Self {
+        Value::Number(Default::default())
+    }
+}
+
+impl Default for ValueWithBool {
+    fn default() -> Self {
+        ValueWithBool::Number(Default::default())
+    }
+}
+
 /// OP code for things like block opcode or monitor opcode
 #[derive(Debug, Default, Clone, PartialEq, Eq, Deserialize, Serialize)]
 #[serde(transparent)]
