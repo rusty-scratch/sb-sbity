@@ -13,7 +13,7 @@ use crate::{
     broadcast::Broadcast,
     comment::Comment,
     list::List,
-    monitor::{ListOrValue, Mode, Monitor, MonitorOpCode, NumberName, Parameter, Slider},
+    monitor::{ListOrValue, Mode, Monitor, NumberName, Parameter, Slider},
     project::{Meta, Project},
     string_hashmap::StringHashMap,
     target::{RotationStyle, Sprite, SpriteOrStage, Stage, VideoState},
