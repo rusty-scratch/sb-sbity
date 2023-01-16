@@ -20,20 +20,6 @@ test_json! {
         monitor_mode_list    => r#""list""#
     }
 
-    MonitorOpCode {
-        monitor_opcode_data_variable            => r#""data_variable""#,
-        monitor_opcode_data_listcontents        => r#""data_listcontents""#,
-        monitor_opcode_motion_xposition         => r#""motion_xposition""#,
-        monitor_opcode_motion_yposition         => r#""motion_yposition""#,
-        monitor_opcode_motion_direction         => r#""motion_direction""#,
-        monitor_opcode_looks_costumenumbername  => r#""looks_costumenumbername""#,
-        monitor_opcode_looks_backdropnumbername => r#""looks_backdropnumbername""#,
-        monitor_opcode_looks_size               => r#""looks_size""#,
-        monitor_opcode_sensing_loudness         => r#""sensing_loudness""#,
-        monitor_opcode_sensing_timer            => r#""sensing_timer""#,
-        monitor_opcode_sensing_username         => r#""sensing_username""#
-    }
-
     Monitor {
         monitor_slider_local_int =>
             r##"{

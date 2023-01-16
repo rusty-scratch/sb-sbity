@@ -113,33 +113,7 @@ test_json! {
             "topLevel": false
         }"#
     }
-}
-
-#[test]
-fn block_fields() {
-    let blocks: &str = include_str!("test_case\\general_block_testcase.json");
-    let blocks: Json = serde_json::from_str(blocks).unwrap();
-    let blocks = blocks
-        .as_object()
-        .unwrap()
-        .values()
-        .map(|v| v.as_object().unwrap());
-    let blocks_fields = blocks.map(|block| block.get("fields").unwrap()).enumerate();
-    for (i, field) in blocks_fields {
-        println!("{i}");
-        json_equal::<StringHashMap<BlockField>>(field.to_owned());
-    }
-}
-
-#[test]
-fn blocks() {
-    let blocks: &str = include_str!("test_case\\general_block_testcase.json");
-    let blocks: Json = serde_json::from_str(blocks).unwrap();
-    let blocks = blocks.as_object().unwrap().values();
-    let blocks = blocks.enumerate();
-    for (i, block) in blocks {
-        println!("{i}");
-        println!("{:#?}", serde_json::from_value::<Block>(block.to_owned()));
-        json_equal::<Block>(block.to_owned());
+    StringHashMap<Block> {
+        blocks => include_str!("test_case\\general_block_testcase.json")
     }
 }
