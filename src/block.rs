@@ -8,7 +8,7 @@ use utils::{deserialize_json_str, serialize_json_str};
 #[serde(rename_all = "camelCase")]
 pub struct Block {
     /// A string naming the block.
-    pub opcode: OpCode<String>,
+    pub opcode: OpCode,
 
     /// Wiki says nothing about this, probably comment id that this block attached to.
     #[serde(default, skip_serializing_if = "Option::is_none")]

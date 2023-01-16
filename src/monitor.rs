@@ -14,7 +14,7 @@ pub struct Monitor {
     pub mode: Mode,
 
     /// See [`MonitorOpCode`]
-    pub opcode: OpCode<MonitorOpCode>,
+    pub opcode: OpCode,
 
     /// See [`Parameter`]
     #[serde(rename = "params")]
@@ -46,54 +46,6 @@ pub struct Monitor {
     /// [`None`] if [`Mode`] is [`Mode::List`]
     #[serde(flatten)]
     pub slider: Option<Slider>,
-}
-
-/// OP code for type of data this monitor is showing
-#[derive(Debug, PartialEq, Clone, Copy, Deserialize, Serialize)]
-pub enum MonitorOpCode {
-    /// User defined variable
-    #[serde(rename = "data_variable")]
-    DataVariable,
-
-    /// User defiend list
-    #[serde(rename = "data_listcontents")]
-    DataListContents,
-
-    /// Sprite's variable x position
-    #[serde(rename = "motion_xposition")]
-    MotionXPostion,
-
-    /// Sprite's variable y position
-    #[serde(rename = "motion_yposition")]
-    MotionYPosition,
-
-    /// Sprite's variable direction
-    #[serde(rename = "motion_direction")]
-    MotionDirection,
-
-    /// Sprite's variable costume
-    #[serde(rename = "looks_costumenumbername")]
-    LooksCostume,
-
-    /// Sprite's variable backdrop
-    #[serde(rename = "looks_backdropnumbername")]
-    LooksBackdrop,
-
-    /// Sprite's variable size
-    #[serde(rename = "looks_size")]
-    LooksSize,
-
-    /// Sense loudness
-    #[serde(rename = "sensing_loudness")]
-    SensingLoudness,
-
-    /// Variable timer
-    #[serde(rename = "sensing_timer")]
-    SensingTimer,
-
-    /// Variable username
-    #[serde(rename = "sensing_username")]
-    SensingUsername,
 }
 
 /// Monitor's Mode
