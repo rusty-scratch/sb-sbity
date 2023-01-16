@@ -14,7 +14,7 @@ pub struct Project {
 }
 
 /// About the project's author and the Scratch version used.
-#[derive(Debug, PartialEq, Clone, Deserialize, Serialize)]
+#[derive(Debug, PartialEq, Eq, Clone, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Meta {
     /// Always `3.0.0`.

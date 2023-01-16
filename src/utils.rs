@@ -43,7 +43,7 @@ where
             &"A str of json",
         )
     })?;
-    let v = serde_json::from_str::<T>(s).map_err(|e| D::Error::custom(e))?;
+    let v = serde_json::from_str::<T>(s).map_err(D::Error::custom)?;
 
     Ok(v)
 }

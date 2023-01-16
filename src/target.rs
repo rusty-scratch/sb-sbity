@@ -120,6 +120,12 @@ pub enum SpriteOrStage {
     Sprite(Sprite),
 }
 
+#[test]
+fn sizeoftest() {
+    dbg!(std::mem::size_of::<Stage>());
+    dbg!(std::mem::size_of::<Sprite>());
+}
+
 /// Determines if video is visible on the stage and if it is flipped.
 /// Has no effect if the project does not use an extension with video input.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]

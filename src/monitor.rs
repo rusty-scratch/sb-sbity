@@ -49,7 +49,7 @@ pub struct Monitor {
 }
 
 /// Monitor's Mode
-#[derive(Debug, PartialEq, Clone, Copy, Deserialize, Serialize)]
+#[derive(Debug, PartialEq, Eq, Clone, Copy, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub enum Mode {
     /// Show value in small display
@@ -66,7 +66,7 @@ pub enum Mode {
 }
 
 /// Name of list or variable that this monitor refering to
-#[derive(Debug, PartialEq, Clone)]
+#[derive(Debug, PartialEq, Eq, Clone)]
 pub enum Parameter {
     /// No parameter
     None,

@@ -35,7 +35,7 @@ impl Default for Costume {
 }
 
 /// Sound Asset.
-#[derive(Debug, Default, Clone, PartialEq, Deserialize, Serialize)]
+#[derive(Debug, Default, Clone, PartialEq, Eq, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Sound {
     /// The sampling rate of the sound in Hertz.
@@ -55,7 +55,7 @@ pub struct Sound {
 }
 
 /// An asset is a costume or sound. (Backdrops are considered costumes.)
-#[derive(Debug, Default, Clone, PartialEq, Deserialize, Serialize)]
+#[derive(Debug, Default, Clone, PartialEq, Eq, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Asset {
     /// The MD5 hash of the asset file.

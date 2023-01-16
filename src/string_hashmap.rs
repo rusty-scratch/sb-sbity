@@ -75,6 +75,6 @@ impl<V: Serialize> Serialize for StringHashMap<V> {
         for (k, v) in &self.0 {
             map_serializer.serialize_entry(&k.to_string(), v)?;
         }
-        Ok(map_serializer.end()?)
+        map_serializer.end()
     }
 }

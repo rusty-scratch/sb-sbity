@@ -193,7 +193,7 @@ pub enum BlockMutationEnum {
 ///
 /// This documentation might not be completed or is completed, idk.
 /// Scratch wiki didn't tell anything about this.
-#[derive(Debug, Default, Clone, PartialEq, Deserialize_repr, Serialize_repr)]
+#[derive(Debug, Default, Clone, PartialEq, Eq, Deserialize_repr, Serialize_repr)]
 #[repr(u8)]
 pub enum ShadowInputType {
     /// There is a shadow
