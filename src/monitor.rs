@@ -14,7 +14,7 @@ pub struct Monitor {
     pub mode: Mode,
 
     /// See [`MonitorOpCode`]
-    pub opcode: OpCode<MonitorOpCode>,
+    pub opcode: OpCode,
 
     /// See [`Parameter`]
     #[serde(rename = "params")]

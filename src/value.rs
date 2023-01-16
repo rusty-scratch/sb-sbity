@@ -7,6 +7,7 @@ pub type Float = f64;
 pub type Text = String;
 pub type Id = String;
 pub type Name = String;
+pub type OpCode = String;
 
 #[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
 #[serde(untagged)]
@@ -90,16 +91,5 @@ impl Default for Value {
 impl Default for ValueWithBool {
     fn default() -> Self {
         ValueWithBool::Number(Default::default())
-    }
-}
-
-/// OP code for things like block opcode or monitor opcode
-#[derive(Debug, Default, Clone, PartialEq, Eq, Deserialize, Serialize)]
-#[serde(transparent)]
-pub struct OpCode<T>(pub T);
-
-impl<T: std::fmt::Display> std::fmt::Display for OpCode<T> {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{}", self.0)
     }
 }
