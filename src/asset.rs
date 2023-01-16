@@ -59,7 +59,7 @@ pub struct Sound {
 #[serde(rename_all = "camelCase")]
 pub struct Asset {
     /// The MD5 hash of the asset file.
-    pub asset_id: Id,
+    pub asset_id: Uid,
 
     /// The name.
     pub name: Name,

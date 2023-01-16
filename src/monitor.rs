@@ -8,12 +8,12 @@ use serde::ser::SerializeMap;
 #[serde(rename_all = "camelCase")]
 pub struct Monitor {
     /// The Id.
-    pub id: Id,
+    pub id: Uid,
 
     /// See [`Mode`]
     pub mode: Mode,
 
-    /// See [`MonitorOpCode`]
+    /// What "thing" is this monitor refering to
     pub opcode: OpCode,
 
     /// See [`Parameter`]

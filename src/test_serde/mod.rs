@@ -17,7 +17,7 @@ use crate::{
     project::{Meta, Project},
     string_hashmap::StringHashMap,
     target::{RotationStyle, Sprite, SpriteOrStage, Stage, VideoState},
-    value::{Float, Id, Int, Name, Number, OpCode, Text, Value},
+    value::{Float, Int, Name, Number, OpCode, Text, Uid, Value},
     variable::Variable,
 };
 

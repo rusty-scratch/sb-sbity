@@ -7,7 +7,7 @@ use crate::prelude::*;
 #[serde(rename_all = "camelCase")]
 pub struct Comment {
     /// The ID of the block the comment is attached to.
-    pub block_id: Option<Id>,
+    pub block_id: Option<Uid>,
 
     /// The x-coordinate of the comment in the code area.
     pub x: Option<Number>,

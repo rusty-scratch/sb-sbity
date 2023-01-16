@@ -5,7 +5,7 @@ use crate::prelude::*;
 pub type Int = i64;
 pub type Float = f64;
 pub type Text = String;
-pub type Id = String;
+pub type Uid = String;
 pub type Name = String;
 pub type OpCode = String;
 

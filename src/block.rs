@@ -12,16 +12,16 @@ pub struct Block {
 
     /// Wiki says nothing about this, probably comment id that this block attached to.
     #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub comment: Option<Id>,
+    pub comment: Option<Uid>,
 
     /// The Id of the next block or null.
-    pub next: Option<Id>,
+    pub next: Option<Uid>,
 
     /// If the block is a stack block and is preceded, this is the Id of the preceding block.
     /// If the block is the first stack block in a C mouth, this is the Id of the C block.
     /// If the block is an input to another block, this is the Id of that other block.
     /// Otherwise it is none.
-    pub parent: Option<Id>,
+    pub parent: Option<Uid>,
 
     /// See [`BlockInput`]
     pub inputs: StringHashMap<BlockInput>,
@@ -61,12 +61,12 @@ pub struct BlockInput {
 }
 
 /// Used for [`BlockInput`]
-/// When the input could be either [`Id`] or [`BlockInputValue`]
+/// When the input could be either [`Uid`] or [`BlockInputValue`]
 #[derive(Debug, Clone, PartialEq, Deserialize, Serialize)]
 #[serde(untagged)]
 pub enum IdOrValue {
-    /// When it's [`Id`]
-    Id(Id),
+    /// When it's [`Uid`]
+    Uid(Uid),
     /// When it's [`BlockInputValue`]
     Value(BlockInputValue),
 }
@@ -82,7 +82,7 @@ pub enum BlockField {
         /// For certain fields,
         /// such as variable and broadcast dropdown menus,
         /// there is also a second element, which is the Id of the field's value.
-        id: Option<Id>,
+        id: Option<Uid>,
     },
     /// Field with no Id needed
     NoId {
@@ -123,7 +123,7 @@ pub enum BlockMutationEnum {
             deserialize_with = "deserialize_json_str",
             serialize_with = "serialize_json_str"
         )]
-        argumentids: Vec<Id>,
+        argumentids: Vec<Uid>,
 
         /// An array of the names of the arguments.
         #[serde(
@@ -159,7 +159,7 @@ pub enum BlockMutationEnum {
             deserialize_with = "deserialize_json_str",
             serialize_with = "serialize_json_str"
         )]
-        argumentids: Vec<Id>,
+        argumentids: Vec<Uid>,
 
         /// Whether to run the block without screen refresh or not.
         #[serde(
@@ -259,7 +259,7 @@ pub enum BlockInputValue {
         name: Name,
 
         /// Id of the broadcast
-        id: Id,
+        id: Uid,
     },
 
     /// Variable input
@@ -267,7 +267,7 @@ pub enum BlockInputValue {
         /// Name of the variable
         name: Name,
         /// Id of the variable
-        id: Id,
+        id: Uid,
         /// Position X of the variable if top_level
         x: Option<Number>,
         /// Position y of the variable if top_level
@@ -279,7 +279,7 @@ pub enum BlockInputValue {
         /// Name of the list
         name: Name,
         /// Id of the list
-        id: Id,
+        id: Uid,
         /// Position X of the variable if top_level
         x: Option<Number>,
         /// Position y of the variable if top_level
@@ -622,7 +622,7 @@ impl BlockField {
     /// such as variable and broadcast dropdown menus,
     /// there is also a second element, which is the Id of the field's value.
     #[inline(always)]
-    pub fn id(&self) -> Option<&Id> {
+    pub fn id(&self) -> Option<&Uid> {
         match self {
             BlockField::WithId { value: _, id } => id.as_ref(),
             BlockField::NoId { value: _ } => None,
@@ -648,7 +648,7 @@ impl<'de> Visitor<'de> for BlockFieldVisitor {
         let value = seq
             .next_element::<Value>()?
             .ok_or_else(|| A::Error::invalid_length(1, &"length 1 or 2 for BlockField"))?;
-        let id = seq.next_element::<Option<Id>>()?;
+        let id = seq.next_element::<Option<Uid>>()?;
 
         Ok(match id {
             Some(id) => BlockField::WithId { value, id },

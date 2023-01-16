@@ -11,5 +11,5 @@ pub use serde_repr::{Deserialize_repr, Serialize_repr};
 pub(crate) use crate::utils;
 pub use crate::{
     string_hashmap::StringHashMap,
-    value::{Float, Id, Int, Name, Number, OpCode, Text, Value, ValueWithBool},
+    value::{Float, Int, Name, Number, OpCode, Text, Uid, Value, ValueWithBool},
 };
