@@ -47,7 +47,7 @@ pub struct Sound {
     /// This is for some reason exists in the file but is not documented on the wiki.
     /// I'm not exactly sure what they do since this is always empty.
     #[serde(skip_serializing_if = "Option::is_none", default)]
-    format: Option<String>,
+    pub format: Option<String>,
 
     /// See [`Asset`]
     #[serde(flatten)]
