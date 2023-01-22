@@ -101,7 +101,7 @@ pub struct BlockMutation {
     pub tag_name: String,
 
     /// Seems to always be an empty array.
-    pub children: [(); 0],
+    pub children: Vec<Json>,
 
     /// See [`BlockMutationEnum`]
     #[serde(flatten)]
