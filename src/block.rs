@@ -98,10 +98,10 @@ pub struct BlockMutation {
     /// Always equal to "mutation".
     /// Don't know if there any other tag
     /// Wiki says there's only "mutation" though
-    tag_name: String,
+    pub tag_name: String,
 
     /// Seems to always be an empty array.
-    children: [(); 0],
+    pub children: [(); 0],
 
     /// See [`BlockMutationEnum`]
     #[serde(flatten)]
