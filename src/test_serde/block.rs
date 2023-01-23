@@ -113,7 +113,7 @@ test_json! {
                 90.349283473
             ]"#
     }
-    BlockVariableReporterTop {
+    BlockVarListReporterTop {
         block_variable_reporter_top =>
             r#"[
                 12,
