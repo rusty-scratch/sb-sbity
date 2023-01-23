@@ -8,7 +8,7 @@ use crate::{
     asset::{Costume, Sound},
     block::{
         Block, BlockField, BlockInput, BlockInputValue, BlockMutation, BlockMutationEnum,
-        ShadowInputType,
+        BlockNormal, BlockVariableReporterTop, ShadowInputType,
     },
     broadcast::Broadcast,
     comment::Comment,

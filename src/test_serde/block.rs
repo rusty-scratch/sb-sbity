@@ -37,27 +37,11 @@ test_json! {
                 "a variable",
                 "gkuehr3r8y87ayrgjdfb"
             ]"#,
-        block_input_value_variable_pos =>
-            r#"[
-                12,
-                "a variable",
-                "gkuehr3r8y87ayrgjdfb",
-                45.324234,
-                90.349283473
-            ]"#,
         block_input_value_list =>
             r#"[
                 13,
                 "a list",
                 "gkuehr3r8y87ayrgjdfb"
-            ]"#,
-        block_input_value_list_pos =>
-            r#"[
-                13,
-                "a list",
-                "gkuehr3r8y87ayrgjdfb",
-                45.324234,
-                90.349283473
             ]"#
     }
 
@@ -111,7 +95,41 @@ test_json! {
             },
             "shadow": false,
             "topLevel": false
-        }"#
+        }"#,
+        block_enum_block_variable_reporter_top =>
+            r#"[
+                12,
+                "a variable",
+                "gkuehr3r8y87ayrgjdfb",
+                45.324234,
+                90.349283473
+            ]"#,
+        block_enum_block_list_reporter_top =>
+            r#"[
+                13,
+                "a list",
+                "gkuehr3r8y87ayrgjdfb",
+                45.324234,
+                90.349283473
+            ]"#
+    }
+    BlockVariableReporterTop {
+        block_variable_reporter_top =>
+            r#"[
+                12,
+                "a variable",
+                "gkuehr3r8y87ayrgjdfb",
+                45.324234,
+                90.349283473
+            ]"#,
+        block_list_reporter_top =>
+            r#"[
+                13,
+                "a list",
+                "gkuehr3r8y87ayrgjdfb",
+                45.324234,
+                90.349283473
+            ]"#
     }
     StringHashMap<Block> {
         blocks => include_str!("test_case\\general_block_testcase.json")

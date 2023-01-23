@@ -1,12 +1,13 @@
 //! Module to deal with Scratch block
 
 use crate::prelude::*;
+use serde_tuple::{Deserialize_tuple, Serialize_tuple};
 use utils::{deserialize_json_str, serialize_json_str};
 
 /// Scratch scripting block
 #[derive(Debug, PartialEq, Clone, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
-pub struct Block {
+pub struct BlockNormal {
     /// A string naming the block.
     pub opcode: OpCode,
 
@@ -47,6 +48,33 @@ pub struct Block {
     /// Y Position of the top level block.
     #[serde(skip_serializing_if = "Option::is_none", default)]
     pub y: Option<Number>,
+}
+
+/// This is a reporter of list or variable when it's at the top.
+#[derive(Debug, PartialEq, Clone, Deserialize_tuple, Serialize_tuple)]
+pub struct BlockVarListReporterTop {
+    kind: ListOrVariable,
+    /// Name of the variable
+    name: Name,
+    /// Id of the variable
+    id: Uid,
+    /// Position X of the reporter
+    x: Number,
+    /// Position y of the reporter
+    y: Number,
+}
+
+#[derive(Debug, PartialEq, Clone)]
+pub enum ListOrVariable {
+    Variable,
+    List,
+}
+
+#[derive(Debug, PartialEq, Clone, Deserialize, Serialize)]
+#[serde(untagged)]
+pub enum Block {
+    BlockNormal(BlockNormal),
+    BlockVarListReporterTop(BlockVarListReporterTop),
 }
 
 /// A struct representing inputs into which other blocks may be dropped, including C mouths.
@@ -268,10 +296,6 @@ pub enum BlockInputValue {
         name: Name,
         /// Id of the variable
         id: Uid,
-        /// Position X of the variable if top_level
-        x: Option<Number>,
-        /// Position y of the variable if top_level
-        y: Option<Number>,
     },
 
     /// List input
@@ -280,17 +304,13 @@ pub enum BlockInputValue {
         name: Name,
         /// Id of the list
         id: Uid,
-        /// Position X of the variable if top_level
-        x: Option<Number>,
-        /// Position y of the variable if top_level
-        y: Option<Number>,
     },
 }
 
-impl Default for Block {
+impl Default for BlockNormal {
     /// This create new block that act like it's a top most block
     fn default() -> Self {
-        Block {
+        BlockNormal {
             opcode: OpCode::default(),
             comment: None,
             next: None,
@@ -307,6 +327,69 @@ impl Default for Block {
 }
 
 // Serde impl ==================================================================
+
+macro_rules! list_or_variable_vistor_types {
+    ($($fn_name:ident, $ty:ty, $sign:ident, $unexpty:ty;)*) => {
+        $(
+            fn $fn_name<E>(self, v: $ty) -> Result<Self::Value, E>
+            where
+                E: serde::de::Error,
+            {
+                match v {
+                    12 => Ok(ListOrVariable::Variable),
+                    13 => Ok(ListOrVariable::List),
+                    v => Err(E::invalid_value(
+                        Unexpected::$sign(v as $unexpty),
+                        &"12 for variable, 13 for list",
+                    )),
+                }
+            }
+        )*
+    };
+}
+
+struct ListOrVariableVisitor;
+
+impl<'de> Visitor<'de> for ListOrVariableVisitor {
+    type Value = ListOrVariable;
+
+    fn expecting(&self, formatter: &mut std::fmt::Formatter) -> std::fmt::Result {
+        formatter.write_str("12 for variable, 13 for list")
+    }
+
+    list_or_variable_vistor_types! {
+        visit_i8, i8, Signed, i64;
+        visit_i16, i16, Signed, i64;
+        visit_i32, i32, Signed, i64;
+        visit_i64, i64, Signed, i64;
+
+        visit_u8, u8, Unsigned, u64;
+        visit_u16, u16, Unsigned, u64;
+        visit_u32, u32, Unsigned, u64;
+        visit_u64, u64, Unsigned, u64;
+    }
+}
+
+impl<'de> Deserialize<'de> for ListOrVariable {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: Deserializer<'de>,
+    {
+        deserializer.deserialize_i64(ListOrVariableVisitor)
+    }
+}
+
+impl Serialize for ListOrVariable {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        serializer.serialize_i64(match self {
+            ListOrVariable::Variable => 12,
+            ListOrVariable::List => 13,
+        })
+    }
+}
 
 impl BlockInput {
     /// Use for serializing
@@ -380,18 +463,8 @@ impl BlockInputValue {
             Color { value: _ } => 9,
             String { value: _ } => 10,
             Broadcast { name: _, id: _ } => 11,
-            Variable {
-                name: _,
-                id: _,
-                x: _,
-                y: _,
-            } => 12,
-            List {
-                name: _,
-                id: _,
-                x: _,
-                y: _,
-            } => 13,
+            Variable { name: _, id: _ } => 12,
+            List { name: _, id: _ } => 13,
         }
     }
 
@@ -407,36 +480,8 @@ impl BlockInputValue {
             Color { value: _ } => 1,
             String { value: _ } => 1,
             Broadcast { name: _, id: _ } => 2,
-            Variable {
-                name: _,
-                id: _,
-                x,
-                y,
-            } => {
-                let mut n = 2;
-                if x.is_some() {
-                    n += 1
-                }
-                if y.is_some() {
-                    n += 1
-                }
-                n
-            }
-            List {
-                name: _,
-                id: _,
-                x,
-                y,
-            } => {
-                let mut n = 2;
-                if x.is_some() {
-                    n += 1
-                }
-                if y.is_some() {
-                    n += 1
-                }
-                n
-            }
+            Variable { name: _, id: _ } => 2,
+            List { name: _, id: _ } => 2,
         }
     }
 }
@@ -528,7 +573,7 @@ impl<'de> Visitor<'de> for BlockInputValueVisitor {
                         ))
                     }
                 };
-                Variable { name, id, x, y }
+                Variable { name, id }
             }
             13 => {
                 let id = seq_next_element_error(
@@ -546,7 +591,7 @@ impl<'de> Visitor<'de> for BlockInputValueVisitor {
                         ))
                     }
                 };
-                List { name, id, x, y }
+                List { name, id }
             }
             v => {
                 return Err(A::Error::invalid_value(
@@ -593,15 +638,9 @@ impl Serialize for BlockInputValue {
                 s.serialize_element(name)?;
                 s.serialize_element(id)?;
             }
-            Variable { name, id, x, y } | List { name, id, x, y } => {
+            Variable { name, id } | List { name, id } => {
                 s.serialize_element(name)?;
                 s.serialize_element(id)?;
-                if let Some(x) = x {
-                    s.serialize_element(x)?;
-                }
-                if let Some(y) = y {
-                    s.serialize_element(y)?;
-                }
             }
         }
         s.end()
