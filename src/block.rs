@@ -53,15 +53,15 @@ pub struct BlockNormal {
 /// This is a reporter of list or variable when it's at the top.
 #[derive(Debug, PartialEq, Clone, Deserialize_tuple, Serialize_tuple)]
 pub struct BlockVarListReporterTop {
-    kind: ListOrVariable,
+    pub kind: ListOrVariable,
     /// Name of the variable
-    name: Name,
+    pub name: Name,
     /// Id of the variable
-    id: Uid,
+    pub id: Uid,
     /// Position X of the reporter
-    x: Number,
+    pub x: Number,
     /// Position y of the reporter
-    y: Number,
+    pub y: Number,
 }
 
 #[derive(Debug, PartialEq, Clone)]
