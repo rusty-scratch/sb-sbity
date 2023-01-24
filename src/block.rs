@@ -73,8 +73,8 @@ pub enum ListOrVariable {
 #[derive(Debug, PartialEq, Clone, Deserialize, Serialize)]
 #[serde(untagged)]
 pub enum Block {
-    BlockNormal(BlockNormal),
-    BlockVarListReporterTop(BlockVarListReporterTop),
+    Normal(BlockNormal),
+    VarList(BlockVarListReporterTop),
 }
 
 /// A struct representing inputs into which other blocks may be dropped, including C mouths.
@@ -85,14 +85,14 @@ pub struct BlockInput {
     pub shadow: ShadowInputType,
 
     /// Inputs
-    pub inputs: Vec<Option<IdOrValue>>,
+    pub inputs: Vec<Option<UidOrValue>>,
 }
 
 /// Used for [`BlockInput`]
 /// When the input could be either [`Uid`] or [`BlockInputValue`]
 #[derive(Debug, Clone, PartialEq, Deserialize, Serialize)]
 #[serde(untagged)]
-pub enum IdOrValue {
+pub enum UidOrValue {
     /// When it's [`Uid`]
     Uid(Uid),
     /// When it's [`BlockInputValue`]
@@ -418,7 +418,7 @@ impl<'de> Visitor<'de> for BlockInputVisitor {
         })?;
 
         let mut inputs = vec![];
-        while let Some(v) = seq.next_element::<Option<IdOrValue>>()? {
+        while let Some(v) = seq.next_element::<Option<UidOrValue>>()? {
             inputs.push(v)
         }
 
