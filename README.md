@@ -1,4 +1,4 @@
-# mc-sbity
+# sb-sbity
 
 Rust crate with Serde implementation for json part in .sb3 format. (the Scratch 3 project format)
 
