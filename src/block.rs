@@ -562,8 +562,8 @@ impl<'de> Visitor<'de> for BlockInputValueVisitor {
                     &mut seq, 3,
                     "Expecting 3 or 5 or more elements for block input value with Id 12 - 13 inclusive"
                 )?;
-                let x = seq.next_element::<Number>()?;
-                let y = seq.next_element::<Number>()?;
+                let _x = seq.next_element::<Number>()?;
+                let _y = seq.next_element::<Number>()?;
                 let name = match value {
                     Value::Text(s) => s,
                     Value::Number(_) => {
@@ -580,8 +580,8 @@ impl<'de> Visitor<'de> for BlockInputValueVisitor {
                     &mut seq, 3,
                     "Expecting 3 or 5 or more elements for block input value with Id 12 - 13 inclusive"
                 )?;
-                let x = seq.next_element::<Number>()?;
-                let y = seq.next_element::<Number>()?;
+                let _x = seq.next_element::<Number>()?;
+                let _y = seq.next_element::<Number>()?;
                 let name = match value {
                     Value::Text(s) => s,
                     Value::Number(_) => {
