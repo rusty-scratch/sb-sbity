@@ -1,6 +1,6 @@
-use super::*;
+use super::super::*;
 
-test_json!{
+test_json! {
     Costume {
         costume =>
             r#"{
@@ -11,7 +11,7 @@ test_json!{
                 "rotationCenterX":240,
                 "rotationCenterY":180
             }"#,
-    
+
         costume_float =>
             r#"{
                 "assetId":"00f1913f7e7ddb13a4ba3631a172094d",

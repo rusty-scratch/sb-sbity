@@ -1,6 +1,6 @@
-use super::*;
+use super::super::*;
 
-test_json!{
+test_json! {
     StringHashMap<i32> {
         id_hash_map => r#"{
             "{6B[NX:abWD|;$w~~Yl?": 23,

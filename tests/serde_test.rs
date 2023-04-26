@@ -1,10 +1,9 @@
 use std::fmt::Debug;
 
-// The unused import mean that it has no test.
+// The unused import mean that it has no test and a reminder of me to write them.
 // I'm too lazy to do all of them.
-use crate::prelude::*;
 #[allow(unused)]
-use crate::{
+use sb_sbity::{
     asset::{Costume, Sound},
     block::{
         Block, BlockField, BlockInput, BlockInputValue, BlockMutation, BlockMutationEnum,
@@ -20,6 +19,8 @@ use crate::{
     value::{Float, Int, Name, Number, OpCode, Text, Uid, Value},
     variable::Variable,
 };
+use serde::{de::DeserializeOwned, Serialize};
+use serde_json::Value as Json;
 
 #[allow(unused)]
 fn json_str_equal_debug_json<T>(v_json: &str, file_prefix: &str)
@@ -52,9 +53,9 @@ where
         .create(true)
         .open(format!("{file_prefix}_after.json"))
         .unwrap();
-    v_json_file.write(v_json_str.as_bytes()).unwrap();
+    v_json_file.write_all(v_json_str.as_bytes()).unwrap();
     v_json_after_file
-        .write(v_json_after_str.as_bytes())
+        .write_all(v_json_after_str.as_bytes())
         .unwrap();
 }
 
@@ -102,7 +103,7 @@ macro_rules! test_json {
             $(
                 #[test]
                 fn $fname() {
-                    json_str_equal::<$type>($json)
+                    super::super::json_str_equal::<$type>($json)
                 }
             )*
         )*
@@ -110,20 +111,4 @@ macro_rules! test_json {
 }
 
 #[cfg(test)]
-mod asset;
-#[cfg(test)]
-mod block;
-#[cfg(test)]
-mod hashmap;
-#[cfg(test)]
-mod id;
-#[cfg(test)]
-mod monitor;
-#[cfg(test)]
-mod project;
-#[cfg(test)]
-mod script_data;
-#[cfg(test)]
-mod target;
-#[cfg(test)]
-mod value;
+mod serde_test_mod;

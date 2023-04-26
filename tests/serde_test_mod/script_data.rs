@@ -1,18 +1,18 @@
-use super::*;
+use super::super::*;
 
-    // block_general(StringHashMap<Block>):
-    //     &from_file("src/test_json/general_block_testcase.json");
+// block_general(StringHashMap<Block>):
+//     &from_file("src/test_json/general_block_testcase.json");
 
-    // block_procedural(StringHashMap<Block>):
-    //     &from_file("src/test_json/procedural_block_testcase.json");
+// block_procedural(StringHashMap<Block>):
+//     &from_file("src/test_json/procedural_block_testcase.json");
 
-    // block_mutation(Vec<BlockMutation>):
-    //     &from_file("src/test_json/mutations.json");
-    
-    // block_control_stop(StringHashMap<Block>):
-    //     &from_file("src/test_json/control_stop_block_testcase.json");
+// block_mutation(Vec<BlockMutation>):
+//     &from_file("src/test_json/mutations.json");
 
-test_json!{
+// block_control_stop(StringHashMap<Block>):
+//     &from_file("src/test_json/control_stop_block_testcase.json");
+
+test_json! {
     Variable {
         variable_local_var_int       => r#"["local var int","23"]"#,
         variable_local_var_float     => r#"["local var float","9.6"]"#,
@@ -21,12 +21,12 @@ test_json!{
         variable_global_var_int      => r#"["global var int",0]"#,
         variable_cloud               => r#"["cloud", 26, true]"#
     }
-    
+
     List {
         list_global => r#"["global list",["dck"]]"#,
         list_local => r#"["local list",["thing","balss","23"]]"#
     }
-    
+
     Broadcast {
         broadcast => r#""some broadcast""#
     }

@@ -1,4 +1,4 @@
-use super::*;
+use super::super::*;
 
 // Block
 // BlockField
@@ -132,6 +132,6 @@ test_json! {
             ]"#
     }
     StringHashMap<Block> {
-        blocks => include_str!("test_case\\general_block_testcase.json")
+        blocks => include_str!("test_case/general_block_testcase.json")
     }
 }

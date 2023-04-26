@@ -1,10 +1,10 @@
-use super::*;
+use super::super::*;
 
-test_json!{
+test_json! {
     Name {
        name => r#""johndoe""#
     }
-    
+
     Number {
         number1 => "25",
         number2 => "-25",

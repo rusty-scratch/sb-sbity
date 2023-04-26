@@ -14,6 +14,4 @@ pub mod list;
 pub mod variable;
 
 pub(crate) mod prelude;
-#[cfg(test)]
-mod test_serde;
 mod utils;
