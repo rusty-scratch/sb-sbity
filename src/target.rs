@@ -114,16 +114,11 @@ pub struct Sprite {
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize)]
+#[allow(clippy::large_enum_variant)] // no it did not have that big difference you dum dum
 #[serde(untagged)]
 pub enum SpriteOrStage {
     Stage(Stage),
     Sprite(Sprite),
-}
-
-#[test]
-fn sizeoftest() {
-    dbg!(std::mem::size_of::<Stage>());
-    dbg!(std::mem::size_of::<Sprite>());
 }
 
 /// Determines if video is visible on the stage and if it is flipped.
